@@ -30,7 +30,7 @@ setup(
     author='ReenigneArcher',
     author_email='ReenigneArcher',
     url='https://github.com/PyArcher/plexagents',
-    packages=find_namespace_packages(include=['plexagents.*']),
+    packages=find_namespace_packages(include=['plexagents', 'plexagents.*']),
     install_requires=requirements,
     python_requires='==2.7',
     long_description=readme,
