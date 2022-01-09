@@ -3,8 +3,15 @@
 """
 Install plexagents
 """
+import setuptools
+
 from plexagents import const
-from setuptools import setup, find_namespace_packages
+
+try:
+    from setuptools import setup, find_namespace_packages
+except ImportError:
+    from setuptools import setup, find_packages
+    find_namespace_packages = find_packages
 
 # Get README.md contents
 with open('README.md') as f:
