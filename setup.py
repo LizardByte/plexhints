@@ -3,8 +3,6 @@
 """
 Install plexagents
 """
-import setuptools
-
 from plexagents import const
 
 try:
@@ -31,7 +29,7 @@ setup(
     description=const.__description__,
     author='ReenigneArcher',
     author_email='ReenigneArcher',
-    url='https://github.com/PyArcher/plex_builtins',
+    url='https://github.com/PyArcher/plexagents',
     packages=find_namespace_packages(include=['plexagents.*']),
     install_requires=requirements,
     python_requires='==2.7',
