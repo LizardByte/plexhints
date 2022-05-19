@@ -16,12 +16,8 @@ with open('README.md') as f:
     readme = f.read()
 
 # Get requirements
-requirements = []
 with open('requirements.txt') as f:
-    for line in f.readlines():
-        if not line.startswith('#'):
-            package = line.strip().split('=', 1)[0]
-            requirements.append(package)
+    requirements = f.read().splitlines()
 
 setup(
     name=const.__name__,
