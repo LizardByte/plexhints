@@ -32,7 +32,7 @@ setup(
     url='https://github.com/PyArcher/plexagents',
     packages=find_namespace_packages(include=['plexagents', 'plexagents.*']),
     install_requires=requirements,
-    python_requires='==2.7',
+    python_requires='>=2.7',
     long_description=readme,
     long_description_content_type='text/markdown',
     keywords=['plex', 'agent', 'plug-in', 'debug'],
@@ -42,6 +42,7 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
 )

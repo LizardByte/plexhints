@@ -11,12 +11,12 @@ def plex_test(plex_builtin, set_value=NOP()):
     :return: True if name is defined, False if name is not defined
     """
     try:
-        exec plex_builtin
+        exec(plex_builtin)
         return True
     except NameError:
         globals()[plex_builtin] = set_value
         return False
-    except:
+    except Exception:
         return True
 
 
@@ -49,5 +49,6 @@ plex_constants = {
     'CACHE_1WEEK': 604800,
     'CACHE_1MONTH': 2592000
 }
+
 for name, value in plex_constants.items():
     plex_test(plex_builtin=name, set_value=value)
