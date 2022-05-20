@@ -2,6 +2,29 @@
 from nop import NOP
 
 
+class Agent:
+    """
+    Fake Agent class with available subclasses.
+
+    https://web.archive.org/web/20150113085307/http://dev.plexapp.com/docs/agents/basics.html#defining-an-agent-class
+    """
+    class Album:
+        """This is a fake Album class."""
+        pass
+
+    class Artist:
+        """This is a fake Artist class."""
+        pass
+
+    class Movies:
+        """This is a fake Movies class."""
+        pass
+
+    class TV_Shows:
+        """This is a fake TV_Shows class."""
+        pass
+
+
 def plex_test(plex_builtin, set_value=NOP()):
     """
     Try to execute the plex_builtin using exec(). If there is a NameError exception add the plex_builtin to globals().
@@ -21,7 +44,6 @@ def plex_test(plex_builtin, set_value=NOP()):
 
 
 plex_globals = [
-    'Agent',
     'Core',
     'HTTP',
     'InterviewObject',
@@ -39,6 +61,7 @@ plex_globals = [
     'XML',
     'YAML'
 ]
+
 for name in plex_globals:
     plex_test(plex_builtin=name)
 
