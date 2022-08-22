@@ -1,7 +1,11 @@
 # future imports
 from __future__ import absolute_import  # import like python 3
 
-from plexhints.log_kit import Log
+# local imports
+from plexhints.log_kit import LogKit
+
+# setup logging
+Log = LogKit()
 
 
 class MediaObject(object):
