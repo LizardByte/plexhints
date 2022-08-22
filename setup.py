@@ -17,14 +17,23 @@ with open('README.md') as f:
 
 # Get requirements
 with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+    requirements = []
+    requirement_lines = f.read().splitlines()
+    for line in requirement_lines:
+        if line:
+            if line.startswith('#'):
+                continue
+            else:
+                requirements.append(line)
+
+    print(requirements)
 
 setup(
     name=const.__name__,
     version=const.__version__,
     description=const.__description__,
-    author='ReenigneArcher',
-    author_email='ReenigneArcher',
+    author='LizardByte',
+    author_email='LizardByte',
     url='https://github.com/LizardByte/plexhints',
     packages=find_namespace_packages(include=['plexhints', 'plexhints.*']),
     install_requires=requirements,
