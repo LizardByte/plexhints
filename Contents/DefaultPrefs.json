@@ -1,0 +1,49 @@
+[
+    {
+        "id": "pref1",
+        "label": "Text preference",
+        "type": "text",
+        "default": "Default Value",
+        "comment": "The comment value is not used by Plex, and is only for your reference.",
+        "comment2": "In fact you can add any key that you want for notes, etc."
+    },
+    {
+        "id": "pref2",
+        "label": "Hidden text preference (passwords, etc.)",
+        "type": "text",
+        "option": "hidden",
+        "default": "",
+        "secure": "true",
+        "comment": "These will be shown as dots/asterisks in the UI",
+        "comment2": "Note that they can likely still be transmitted with http requests.",
+        "comment3": "Plex is supposed to block transmission over http if 'secure' is 'true', but it does not always."
+    },
+    {
+        "id": "pref3",
+        "label": "Boolean preference",
+        "type": "bool",
+        "default": "true",
+        "comment": "Values will be encoded to True or False python objects."
+    },
+    {
+        "id": "pref4",
+        "label": "Enum preference",
+        "type": "enum",
+        "values": [
+            "value1",
+            "value2",
+            "value3"
+        ],
+        "default": "value3",
+        "comment": "These will be shown as drop down lists in the interface."
+    },
+    {
+        "id": "pref1-b",
+        "label": "Text preference",
+        "type": "text",
+        "default": "Default Value",
+        "hidden": "true",
+        "comment": "The hidden key is undocumented by Plex. It applies to every 'type' of preference.",
+        "comment2": "This is unconfirmed, but it may hide the preference from interface."
+    }
+]

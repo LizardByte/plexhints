@@ -1,69 +1,106 @@
-# plexagents
+# plexhints
 
-## About
-- This is a library to help with testing and debugging of Plex metadata agents and plugins.
-  - Essentially, the library allows you to fake the following names and constants:
-    
-    - Names:
-      ```txt
-      Agent
-      Core
-      HTTP
-      InterviewObject
-      JSON
-      Locale
-      Log
-      MessageContainer
-      MetadataSearchResult
-      OtherObject
-      Prefs
-      Proxy
-      RSS
-      TrailerObject
-      Util
-      XML
-      YAML
-      ```
-    - Constants:
-      ```txt
-      CACHE_1MINUTE
-      CACHE_1HOUR
-      CACHE_1DAY
-      CACHE_1WEEK
-      CACHE_1MONTH
-      ```
+## Description
+Type hinting library for Plex plugin development.
 
 ## Installation:
-```txt
-pip install git+https://github.com/PyArcher/plexagents.git#egg=plexagents
-````
-
-## Usage:
-Place this at the top of each .py file used by your metadata agent. This will only import Names that are not
-already defined, which means that they will not be imported when running the agent/plugin inside of plex.
-```py
-from plexagents.builtins import *
+### Basic
+```bash
+python -m pip install git+https://github.com/LizardByte/plexhints.git#egg=plexhints
 ```
 
-## Integrate with github
-Filename: `Contents\Libraries\Shared\requirements.txt`
+### Install to plugin modules directory
+```bash
+python -m pip install --target=./Contents/Libraries/Shared \
+  git+https://github.com/LizardByte/plexhints.git#egg=plexhints --no-warn-script-location
+```
+
+### Use `requirements.txt` file
+Filename: `./Contents/Libraries/Shared/requirements.txt`
 ```txt
-#plexagent
-git+https://github.com/PyArcher/plexagents.git#egg=plexagents
+#plexhints
+git+https://github.com/LizardByte/plexhints.git#egg=plexhints
 
 # add your other requirements here as well
 ```
 
-Filename:`.github\workflows\create_package.yml`
+```bash
+python -m pip install --target=./Contents/Libraries/Shared \
+  -r ./Contents/Libraries/Shared/requirements.txt  --no-warn-script-location
+```
+
+
+## Usage:
+Place this at the top of your `Code/__init__.py` file. It is important to only import these when running outside
+of Plex. You should only import what is necessary, but all examples are shown.
+
+```py
+# standard imports
+import os
+import sys
+
+# plexhints
+if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
+    sys.path.append(os.path.join('Contents', 'Libraries', 'Shared'))  # when running outside plex, append the path
+
+    from plexhints import Agent, Media  # agent kit
+    from plexhints import Core  # core kit
+    from plexhints import CACHE_1MINUTE, CACHE_1HOUR, CACHE_1DAY, CACHE_1WEEK, CACHE_1MONTH  # constant kit
+    from plexhints import Locale  # locale kit
+    from plexhints import Log  # log kit
+    from plexhints import HTTP  # network kit
+    from plexhints import MessageContainer, MetadataItem, MetadataSearchResult, SearchResult  # object kit
+    from plexhints import HTML, JSON, Plist, RSS, XML, YAML  # parse kit
+    from plexhints import Prefs  # prefs kit
+    from plexhints import Proxy  # proxy kit
+
+    # extra objects
+    from plexhints import BehindTheScenesObject, \
+        ConcertVideoObject, \
+        DeletedSceneObject, \
+        FeaturetteObject, \
+        InterviewObject, \
+        LiveMusicVideoObject, \
+        LyricMusicVideoObject, \
+        MusicVideoObject, \
+        OtherObject, \
+        SceneOrSampleObject, \
+        ShortObject, \
+        TrailerObject
+```
+
+If you use submodules, you can use the same as above in your other files, except removing the `sys.path.append` method
+as it is no longer needed.
+
+```py
+# standard imports
+import sys
+
+# plexhints
+if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
+    from plexhints import Log
+```
+
+## Developer References:
+A mirror of Plex's [Framework](https://github.com/squaresmile/Plex-Plug-Ins/tree/master/Framework.bundle/Contents/Resources/Versions/2/Python/Framework)
+
+```bash
+git clone https://github.com/squaresmile/Plex-Plug-Ins.git
+```
+
+A snapshot of the original Plex developer [docs](https://web.archive.org/web/https://dev.plexapp.com/docs/index.html)
+
+## Integrate with GitHub
+Filename:`.github\workflows\CI.yml`
 ```yaml
-name: Create Package
+name: CI
 
 on:
   pull_request:
     branches: [master, nightly]
-    types: [opened, synchronize, edited, reopened]
+    types: [opened, synchronize, reopened]
   push:
-    branches: [master, nightly, add-repo-actions]
+    branches: [master, nightly]
   workflow_dispatch:
 
 jobs:
@@ -72,25 +109,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+        
       - name: Install Python 2.7
         uses: actions/setup-python@v2
         with:
           python-version: '2.7'
+          
       - name: Set up Python 2.7 Dependencies
         env:
-          TARGET_DIR: Contents\Libraries\Shared
+          TARGET_DIR: ./Contents/Libraries/Shared
         run: |
-          echo "Installing Plex Agent Requirements"
-          python --version
           python -m pip --no-python-version-warning --disable-pip-version-check install --upgrade pip==20.3.4
-          pip install --target=${{ env.TARGET_DIR }} -r ${{ env.TARGET_DIR }}\requirements.txt  --no-warn-script-location --ignore-requires-python
-      - name: Test Plex Agent
+          pip install --target=${{ env.TARGET_DIR }} -r ${{ env.TARGET_DIR }}/requirements.txt  --no-warn-script-location
+          
+      # This only ensure the plugin can be properly imported
+      - name: Test Plex Plugin
         run: |
-          python --version
-          python Contents\Code\__init__.py
+          python ./Contents/Code/__init__.py
+          
       - name: Upload Artifacts
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v2
         with:
           name: ${{ github.repository }}
