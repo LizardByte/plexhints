@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.plugin</string>
+    <key>PlexAgentAttributionText</key>
+    <string>
+        <![CDATA[
+            <!-- Import custom css -->
+            <style>
+                @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+            </style>
+            <style>
+                div.center {
+                    text-align: center;
+                }
+            </style>
+
+            <div class="center">
+                <strong>plexhints</strong><br>
+            </div>
+            <br>
+            <a href="https://github.com/lizardbyte/plexhints" target="_blank">plexhints</a> is a type hinting
+            library for Plex plugin development.
+            <br>
+            <br>
+            <table>
+                <tr>
+                    <td>Version:  <i class="fas fa-fw fa-times-circle" style="color:red"></i></td>
+                    <td>source</td>
+                    <td>| <a href="https://github.com/LizardByte/plexhints/releases/latest" target="_blank">Releases</a></td>
+                </tr>
+            </table>
+            <br>
+            <div class="center">
+                <i class="fab fa-fw fa-python" style="font-size:80px;"></i>
+            </div>
+
+            <script>
+                <!-- Custom Javascript here -->
+            </script>
+        ]]>
+    </string>
+    <key>PlexFrameworkVersion</key>
+    <string>2</string>
+    <key>PlexPluginMode</key>
+    <string>Agent</string>
+    <key>PlexClientPlatforms</key>
+    <string></string>
+    <key>PlexClientPlatformExclusions</key>
+    <string></string>
+    <key>PlexPluginRegions</key>
+    <array>
+        <string></string>
+    </array>
+    <key>PlexPluginDebug</key>
+    <array><string>1</string>
+    </array>
+    <key>PlexPluginCodePolicy</key>
+    <string>Elevated</string>
+    <key>PlexPluginClass</key>
+    <string>agent</string>
+    <key>PlexPluginConsoleLogging</key>
+    <string>0</string>
+</dict>
+</plist>

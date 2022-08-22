@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Install plexagents
+Install plexhints
 """
-from plexagents import const
+from plexhints import const
 
 try:
     from setuptools import setup, find_namespace_packages
@@ -25,8 +25,8 @@ setup(
     description=const.__description__,
     author='ReenigneArcher',
     author_email='ReenigneArcher',
-    url='https://github.com/PyArcher/plexagents',
-    packages=find_namespace_packages(include=['plexagents', 'plexagents.*']),
+    url='https://github.com/LizardByte/plexhints',
+    packages=find_namespace_packages(include=['plexhints', 'plexhints.*']),
     install_requires=requirements,
     python_requires='>=2.7',
     long_description=readme,
@@ -35,7 +35,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: GNU Affero General Public License v3',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
