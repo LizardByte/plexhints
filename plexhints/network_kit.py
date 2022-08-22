@@ -16,7 +16,10 @@ from requests.cookies import RequestsCookieJar
 from plexhints._helpers import check_port, cookie_jar, http_request
 from plexhints._constants import GLOBAL_DEFAULT_TIMEOUT
 from plexhints.const import PLEX_FRAMEWORK_VERSION
-from plexhints.log_kit import Log
+from plexhints.log_kit import LogKit
+
+# setup logging
+Log = LogKit()
 
 password_manager = HTTPPasswordMgrWithDefaultRealm()
 

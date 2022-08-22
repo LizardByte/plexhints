@@ -8,7 +8,10 @@ import tempfile
 from typing import AnyStr
 
 # local imports
-from plexhints.log_kit import Log
+from plexhints.log_kit import LogKit
+
+# setup logging
+Log = LogKit()
 
 
 class CoreKit:
