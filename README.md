@@ -43,19 +43,19 @@ import sys
 if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
     sys.path.append(os.path.join('Contents', 'Libraries', 'Shared'))  # when running outside plex, append the path
 
-    from plexhints import Agent, Media  # agent kit
-    from plexhints import Core  # core kit
-    from plexhints import CACHE_1MINUTE, CACHE_1HOUR, CACHE_1DAY, CACHE_1WEEK, CACHE_1MONTH  # constant kit
-    from plexhints import Locale  # locale kit
-    from plexhints import Log  # log kit
-    from plexhints import HTTP  # network kit
-    from plexhints import MessageContainer, MetadataItem, MetadataSearchResult, SearchResult  # object kit
-    from plexhints import HTML, JSON, Plist, RSS, XML, YAML  # parse kit
-    from plexhints import Prefs  # prefs kit
-    from plexhints import Proxy  # proxy kit
+    from plexhints.kits import Agent, Media  # agent kit
+    from plexhints.kits import Core  # core kit
+    from plexhints.kits import CACHE_1MINUTE, CACHE_1HOUR, CACHE_1DAY, CACHE_1WEEK, CACHE_1MONTH  # constant kit
+    from plexhints.kits import Locale  # locale kit
+    from plexhints.kits import Log  # log kit
+    from plexhints.kits import HTTP  # network kit
+    from plexhints.kits import MessageContainer, MetadataItem, MetadataSearchResult, SearchResult  # object kit
+    from plexhints.kits import HTML, JSON, Plist, RSS, XML, YAML  # parse kit
+    from plexhints.kits import Prefs  # prefs kit
+    from plexhints.kits import Proxy  # proxy kit
 
     # extra objects
-    from plexhints import BehindTheScenesObject, \
+    from plexhints.kits import BehindTheScenesObject, \
         ConcertVideoObject, \
         DeletedSceneObject, \
         FeaturetteObject, \
@@ -78,7 +78,7 @@ import sys
 
 # plexhints
 if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
-    from plexhints import Log
+    from plexhints.kits import Log
 ```
 
 ## Developer References:

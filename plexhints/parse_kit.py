@@ -17,7 +17,10 @@ import yaml
 # local imports
 from plexhints._helpers import check_port, http_request
 from plexhints._constants import GLOBAL_DEFAULT_TIMEOUT
-from plexhints.log_kit import Log
+from plexhints.log_kit import LogKit
+
+# setup logging
+Log = LogKit()
 
 # conditional imports
 if sys.version_info.major < 3:

@@ -7,8 +7,14 @@ import os
 from typing import Optional, Union
 
 # local imports
-from plexhints.log_kit import Log
-from plexhints.parse_kit import XML
+from plexhints.log_kit import LogKit
+from plexhints.parse_kit import XMLKit
+
+# setup logging
+Log = LogKit()
+
+# setup xml
+XML = XMLKit()
 
 
 class Pref(object):
