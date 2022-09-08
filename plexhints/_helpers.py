@@ -2,6 +2,7 @@
 from __future__ import absolute_import  # import like python 3
 
 # standard imports
+import datetime
 import time
 from typing import Optional
 
@@ -12,7 +13,7 @@ import requests_cache
 from requests_cache import CachedSession
 
 # local imports
-from plexhints._constants import ELEVATED_POLICY, GLOBAL_DEFAULT_TIMEOUT
+from plexhints import ELEVATED_POLICY, GLOBAL_DEFAULT_TIMEOUT
 
 cookie_jar = RequestsCookieJar()
 session = CachedSession()
@@ -46,7 +47,6 @@ def http_request(url, values=None, headers=None, cache_time=None, encoding=None,
     # type: (str, Optional[dict], Optional[dict], Optional[float], Optional[str], Optional[str], float, bool, float, Optional[str], Optional[any], bool, Optional[str]) -> requests.Response  # noqa: E501  # is it possible to have multiline type hints in python2?
 
     # todo - implement the following parameters:
-    # cache_time
     # encoding
     # errors
     # immediate
@@ -60,9 +60,8 @@ def http_request(url, values=None, headers=None, cache_time=None, encoding=None,
 
     cache_option = requests_cache.enabled() if cache_time else session.cache_disabled()
 
-    # todo
     if cache_time:
-        session._cache_expire_after = cache_time
+        session._cache_expire_after = datetime.timedelta(seconds=cache_time)
 
     with cache_option:
         request_methods = dict(

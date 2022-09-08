@@ -7,17 +7,18 @@ import os
 from typing import Optional, Union
 
 # local imports
-from plexhints.log_kit import LogKit
-from plexhints.parse_kit import XMLKit
+from plexhints import CONTENTS
+from plexhints.log_kit import _LogKit
+from plexhints.parse_kit import _XMLKit
 
 # setup logging
-Log = LogKit()
+_Log = _LogKit()
 
 # setup xml
-XML = XMLKit()
+_XML = _XMLKit()
 
 
-class Pref(object):
+class _Pref(object):
     """
     Base class for a Preference object.
 
@@ -78,7 +79,7 @@ class Pref(object):
         return "%s (%s)" % (type(self).__name__, self.label)
 
 
-class TextPref(Pref):
+class _TextPref(_Pref):
     """
     Base class for a Text Preference object.
 
@@ -108,7 +109,7 @@ class TextPref(Pref):
     """
 
     def __init__(self, label, default_value, options=[], secure=False, hidden=False):
-        Pref.__init__(self, pref_type='text', label=label, default_value=default_value, secure=secure, hidden=hidden)
+        _Pref.__init__(self, pref_type='text', label=label, default_value=default_value, secure=secure, hidden=hidden)
         self.type = 'text'
         self.options = options
 
@@ -126,11 +127,11 @@ class TextPref(Pref):
             return str(value)
 
     def info_dict(self, locale, value=None, **kwargs):
-        data = Pref.info_dict(self, locale, value, option=','.join(self.options), **kwargs)
+        data = _Pref.info_dict(self, locale, value, option=','.join(self.options), **kwargs)
         return data
 
 
-class BooleanPref(Pref):
+class _BooleanPref(_Pref):
     """
     Base class for a Preference object.
 
@@ -158,7 +159,7 @@ class BooleanPref(Pref):
     """
 
     def __init__(self, label, default_value, secure=False, hidden=False):
-        Pref.__init__(self, pref_type='bool', label=label, default_value=default_value, secure=secure, hidden=hidden)
+        _Pref.__init__(self, pref_type='bool', label=label, default_value=default_value, secure=secure, hidden=hidden)
         self.type = 'bool'
 
     def encode_value(self, value):
@@ -175,7 +176,7 @@ class BooleanPref(Pref):
             return False
 
 
-class EnumPref(Pref):
+class _EnumPref(_Pref):
     """
     Base class for a Preference object.
 
@@ -207,7 +208,7 @@ class EnumPref(Pref):
     def __init__(self, label, default_value, values=[], secure=False, hidden=False):
         self.type = 'enum'
         self.values = values
-        Pref.__init__(self, pref_type='enum', label=label, default_value=default_value, secure=secure, hidden=hidden)
+        _Pref.__init__(self, pref_type='enum', label=label, default_value=default_value, secure=secure, hidden=hidden)
 
     def encode_value(self, value):
         # type: (str) -> Optional[str]
@@ -244,10 +245,10 @@ class EnumPref(Pref):
         for v in self.values:
             value_labels.append(v)
             # value_labels.append(localization.localize(v, locale))  # todo - localize value
-        return Pref.info_dict(self, locale, value, values='|'.join(value_labels))
+        return _Pref.info_dict(self, locale, value, values='|'.join(value_labels))
 
 
-class PreferenceSet(object):
+class _PreferenceSet(object):
 
     def __init__(self, identifier):
         self._identifier = identifier
@@ -270,7 +271,7 @@ class PreferenceSet(object):
         user_values = {}
 
         if not os.path.isfile(file_path):
-            Log.Info("No user preferences file exists")
+            _Log.Info("No user preferences file exists")
             self._save_user_file()
 
         else:
@@ -279,7 +280,7 @@ class PreferenceSet(object):
                 with open(file_path, mode='r') as f:
                     prefs_xml_str = f.read()
 
-                prefs_xml = XML.ElementFromString(string=prefs_xml_str)
+                prefs_xml = _XML.ElementFromString(string=prefs_xml_str)
 
                 # Iterate through each element
                 for element in prefs_xml:
@@ -289,11 +290,11 @@ class PreferenceSet(object):
                     if element.text is not None and pref_name in self._prefs:
                         user_values[pref_name] = str(element.text)
 
-                Log.Debug("%s the user preferences for %s",
-                          ("Loaded" if len(self._user_values_dict) == 0 else "Reloaded"), self._identifier)
+                _Log.Debug("%s the user preferences for %s",
+                           ("Loaded" if len(self._user_values_dict) == 0 else "Reloaded"), self._identifier)
 
             except Exception:
-                Log.Exception("Exception loading user preferences from %s", file_path)
+                _Log.Exception("Exception loading user preferences from %s", file_path)
 
         self._user_values_dict = user_values
 
@@ -301,19 +302,19 @@ class PreferenceSet(object):
         # return immediately if daemonized
         # todo
 
-        element = XML.Element(name='PluginPreferences')
+        element = _XML.Element(name='PluginPreferences')
 
         for name, pref in self._prefs.items():
-            element.append(XML.Element(name=name,
-                                       text=self._user_values_dict.get(name, pref.encode_value(pref.default_value))))
+            element.append(_XML.Element(name=name,
+                                        text=self._user_values_dict.get(name, pref.encode_value(pref.default_value))))
 
-        prefs_xml = XML.StringFromElement(el=element)
+        prefs_xml = _XML.StringFromElement(el=element)
         prefs_directory = os.path.join('plexhints', 'Preferences')
         if not os.path.isdir(prefs_directory):
             os.mkdir(prefs_directory)
         with open(self._user_file_path, mode='w+') as f:
             f.write(prefs_xml)
-        Log.Debug("Saved the user preferences")
+        _Log.Debug("Saved the user preferences")
 
     @property
     def _user_values(self):
@@ -326,7 +327,7 @@ class PreferenceSet(object):
 
     def update_user_values(self, **kwargs):
         for name, value in kwargs.items():
-            if isinstance(self._prefs.get(name), BooleanPref):
+            if isinstance(self._prefs.get(name), _BooleanPref):
                 value = 'true' if str(value).lower() in ['1', 'true'] else 'false'
             self._user_values_dict[name] = value
 
@@ -340,7 +341,7 @@ class PreferenceSet(object):
 
     @property
     def default_prefs_path(self):
-        return os.path.join('Contents', 'DefaultPrefs.json')
+        return os.path.join(*CONTENTS + ['DefaultPrefs.json'])
 
     def _load_prefs(self):
         prefs_dict = {}
@@ -352,9 +353,9 @@ class PreferenceSet(object):
 
         # Check to see if any service preferences exist for this plug-in
         service_paths = [
-            os.path.join('Contents', 'Services', 'URL'),
-            os.path.join('Contents', 'Search Services'),
-            os.path.join('Contents', 'Related Content Services')
+            os.path.join(*CONTENTS + ['Services', 'URL']),
+            os.path.join(*CONTENTS + ['Search Services']),
+            os.path.join(*CONTENTS + ['Related Content Services'])
         ]
         service_json_default = 'ServicePrefs.json'
 
@@ -373,9 +374,9 @@ class PreferenceSet(object):
                     with open(name=file_path, mode='r') as f:
                         json_array = json.load(fp=f)
                     prefs_json.extend(json_array)
-                    Log.Debug("Loaded preferences from %s", os.path.split(file_path)[1])
+                    _Log.Debug("Loaded preferences from %s", os.path.split(file_path)[1])
                 except Exception:
-                    Log.Exception("Exception loading preferences from %s", os.path.split(file_path)[1])
+                    _Log.Exception("Exception loading preferences from %s", os.path.split(file_path)[1])
 
         # Iterate over the array loaded from the JSON files
         for pref in prefs_json:
@@ -404,17 +405,17 @@ class PreferenceSet(object):
                         pref_option = pref['option'].split(',')
                     else:
                         pref_option = []
-                    prefs_dict[name] = TextPref(label=pref_label,
-                                                default_value=pref_default,
-                                                options=pref_option,
-                                                secure=pref_secure,
-                                                hidden=pref_hidden)
+                    prefs_dict[name] = _TextPref(label=pref_label,
+                                                 default_value=pref_default,
+                                                 options=pref_option,
+                                                 secure=pref_secure,
+                                                 hidden=pref_hidden)
 
                 elif pref_type == 'bool':
-                    prefs_dict[name] = BooleanPref(label=pref_label,
-                                                   default_value=pref_default,
-                                                   secure=pref_secure,
-                                                   hidden=pref_hidden)
+                    prefs_dict[name] = _BooleanPref(label=pref_label,
+                                                    default_value=pref_default,
+                                                    secure=pref_secure,
+                                                    hidden=pref_hidden)
 
                 elif pref_type == 'enum':
                     # Enum prefs have a set of values - grab these
@@ -422,11 +423,11 @@ class PreferenceSet(object):
                         pref_values = pref['values']
                     else:
                         pref_values = []
-                    prefs_dict[name] = EnumPref(label=pref_label,
-                                                default_value=pref_default,
-                                                values=pref_values,
-                                                secure=pref_secure,
-                                                hidden=pref_hidden)
+                    prefs_dict[name] = _EnumPref(label=pref_label,
+                                                 default_value=pref_default,
+                                                 values=pref_values,
+                                                 secure=pref_secure,
+                                                 hidden=pref_hidden)
 
                 # type not found, ignore this preference
                 else:
@@ -464,3 +465,6 @@ class PreferenceSet(object):
             return pref.decode_value(value if value else pref.default_value)
 
         raise KeyError("No preference named '%s' found." % name)
+
+
+Prefs = _PreferenceSet('test')

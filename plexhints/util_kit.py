@@ -2,26 +2,63 @@
 from __future__ import absolute_import  # import like python 3
 
 # standard imports
+import base64
+from future.moves.urllib.parse import quote, quote_plus, unquote, unquote_plus, urlencode, urljoin, parse_qs, parse_qsl
 import math
 from operator import attrgetter, itemgetter
+import os
 import random
 import re
 import string
-from typing import Optional, SupportsFloat
+import sys
+import textwrap
+from typing import AnyStr, Dict, Iterable, List, Optional, SupportsFloat, Tuple
+import unicodedata
+import uuid
 
 # lib imports
+from bs4 import BeautifulSoup
+
 try:
     xrange
 except NameError:
     from past.builtins import range, xrange
 
+# local imports
+from plexhints.log_kit import _LogKit
 
-def clean_up_string(s):
+# setup logging
+_Log = _LogKit()
+
+# redefine unicode
+try:
+    unicode
+except NameError:
+    unicode = str
+
+# (pattern, search, replace) regex english plural rules tuple
+_plural_rules = (
+    ('[ml]ouse$', '([ml])ouse$', '\\1ice'),
+    ('child$', 'child$', 'children'),
+    ('booth$', 'booth$', 'booths'),
+    ('foot$', 'foot$', 'feet'),
+    ('ooth$', 'ooth$', 'eeth'),
+    ('l[eo]af$', 'l([eo])af$', 'l\\1aves'),
+    ('sis$', 'sis$', 'ses'),
+    ('man$', 'man$', 'men'),
+    ('ife$', 'ife$', 'ives'),
+    ('eau$', 'eau$', 'eaux'),
+    ('lf$', 'lf$', 'lves'),
+    ('[sxz]$', '$', 'es'),
+    ('[^aeioudgkprt]h$', '$', 'es'),
+    ('(qu|[^aeiou])y$', 'y$', 'ies'),
+    ('$', '$', 's')
+)
+
+
+def _clean_up_string(s):
     # type: (str) -> str
-    try:
-        s = unicode(s)
-    except NameError:  # `unicode` is not available in python 3.5+
-        pass
+    s = unicode(s)
 
     s = s.replace('&', 'and')  # replace and symbol
     s = re.sub('[' + string.punctuation + ']', '', s)  # remove punctuation
@@ -31,10 +68,10 @@ def clean_up_string(s):
     return s
 
 
-def levenshtein_distance(first, second):
+def _levenshtein_distance(first, second):
     # type: (str, str) -> int
-    first = clean_up_string(first)
-    second = clean_up_string(second)
+    first = _clean_up_string(first)
+    second = _clean_up_string(second)
 
     if len(first) > len(second):
         first, second = second, first
@@ -58,10 +95,10 @@ def levenshtein_distance(first, second):
     return distance_matrix[first_length - 1][second_length - 1]
 
 
-def longest_common_substring(first, second):
+def _longest_common_substring(first, second):
     # type: (str, str) -> str
-    string_first = clean_up_string(first)
-    string_second = clean_up_string(second)
+    string_first = _clean_up_string(first)
+    string_second = _clean_up_string(second)
 
     len_first = len(string_first)
     len_second = len(string_second)
@@ -83,7 +120,38 @@ def longest_common_substring(first, second):
     return ''
 
 
-def version_at_least(version, *components):
+def _plural(noun):
+    # type: (str) -> str
+    for rule in _regex_rules():
+        result = rule(noun)
+        if result:
+            return result
+
+
+def _regex_rules(rules=_plural_rules):
+    # type: (tuple) -> Iterable
+    for line in rules:
+        pattern, search, replace = line
+        yield lambda word: re.search(pattern, word) and re.sub(search, replace, word)
+
+
+def _safe_encode(s):
+    # type: (str) -> str
+    return base64.b64encode(s).replace('/', '@').replace('+', '*').replace('=', '_')
+
+
+def _safe_decode(s):
+    # type: (str) -> str
+    return base64.b64decode(s.replace('@', '/').replace('*', '+').replace('_', '=') + '=' * (4 - len(s) % 4))
+
+
+def _url_encode(s):
+    # type: (str) -> str
+    encoded_str = urlencode({'v': s})
+    return encoded_str[2:]
+
+
+def _version_at_least(version, *components):
     # type: (Optional[str], *any) -> bool
     if version is None:
         return False
@@ -98,7 +166,214 @@ def version_at_least(version, *components):
     return parts >= tuple(components)
 
 
-class UtilKit:
+class _StringKit:
+
+    def __init__(self):
+        self.LETTERS = string.ascii_letters
+        self.LOWERCASE = string.ascii_lowercase
+        self.UPPERCASE = string.ascii_uppercase
+        self.DIGITS = string.digits
+        self.HEX_DIGITS = string.hexdigits
+        self.LETTERS = string.letters
+        self.OCT_DIGITS = string.octdigits
+        self.PUNCTUATION = string.punctuation
+        self.PRINTABLE = string.printable
+        self.WHITESPACE = string.whitespace
+
+    def Encode(self, s):
+        # type: (str) -> str
+        """
+        Encodes the given string using the framework's standard encoding (a slight variant on Base64 which ensures
+        that the string can be safely used as part of a URL).
+        """
+        return _safe_encode(s=s)
+
+    def Decode(self, s):
+        # type: (str) -> str
+        """
+        Decodes a string previously encoded using the above function.
+        """
+        return _safe_decode(s=s)
+
+    def Base64Encode(self, s, with_newlines=False):
+        # type: (str, bool) -> str
+        """
+        Encodes the given string using Base64 encoding.
+        """
+        if with_newlines:
+            return base64.encodestring(s=s)
+        else:
+            return base64.b64encode(s=s)
+
+    def Base64Decode(self, s):
+        # type: (str) -> str
+        """
+        Decodes the given Base64-encoded string.
+        """
+        return base64.decodestring(s=s)
+
+    def Quote(self, s, usePlus=False):
+        # type: (str, bool) -> str
+        """
+        Replaces special characters in *s* using the ``%xx`` escape. Letters, digits, and the characters ``'_.-'``
+        are never quoted. If *usePlus* is ``True``, spaces are escaped as a plus character instead of ``%20``.
+        """
+        if usePlus:
+            return quote_plus(s=s)
+        else:
+            return quote(s=s)
+
+    def URLEncode(self, s):
+        # type: (str) -> str
+        return _url_encode(s=s)
+
+    def Unquote(self, s, usePlus=False):
+        # type: (str, bool) -> str
+        """
+        Replace ``%xx`` escapes by their single-character equivalent. If *usePlus* is ``True``, plus characters are
+        replaced with spaces.
+        """
+        if usePlus:
+            return unquote_plus(s)
+        else:
+            return unquote(s)
+
+    def Join(self, words, sep=None):
+        # type: (Iterable[AnyStr], AnyStr) -> AnyStr
+        return string.join(words, sep)
+
+    def JoinURL(self, base, url, allow_fragments=True):
+        # type: (AnyStr, AnyStr, bool) -> AnyStr
+        return urljoin(base, url, allow_fragments)
+
+    def StripTags(self, s):
+        # type: (AnyStr) -> AnyStr
+        """
+        Removes HTML tags from a given string.
+        """
+        return re.sub(r'<[^<>]+>', '', s)
+
+    def DecodeHTMLEntities(self, s):
+        # type: (str) -> str
+        """
+        Converts HTML entities into regular characters (e.g. "&amp;"" => "&")
+        """
+        soup = BeautifulSoup(s, convertEntities=BeautifulSoup.HTML_ENTITIES)
+        return unicode(soup)
+
+    def UUID(self):
+        """
+        Generates a universally unique identifier (UUID) string. This string is guaranteed to be unique.
+        """
+        return str(uuid.uuid4())
+
+    def StripDiacritics(self, s):
+        # type: (str) -> str
+        """
+        Removes diacritics from a given string.
+        """
+        temp = unicode(s)
+
+        u = temp.replace(u"\u00df", u"ss").replace(u"\u1e9e", u"SS")
+        nkfd_form = unicodedata.normalize('NFKD', u)
+        only_ascii = nkfd_form.encode('ASCII', 'ignore')
+        return only_ascii
+
+    def Pluralize(self, s):
+        # type: (str) -> str
+        """
+        Attempts to return a pluralized version of the given string (e.g. converts ``boot`` to ``boots``).
+        """
+        return _plural(noun=s)
+
+    def LevenshteinDistance(self, first, second):
+        # type: (str, str) -> int
+        """
+        Computes the `Levenshtein distance <http://en.wikipedia.org/wiki/Levenshtein_distance>`_ between two given
+        strings.
+        """
+        return _levenshtein_distance(first=first, second=second)
+
+    def LevenshteinRatio(self, first, second):
+        # type: (str, str) -> float
+        """
+        Computes the `Levenshtein ratio (0-1) <http://en.wikipedia.org/wiki/Levenshtein_distance>`_ between two given
+        strings.
+        """
+        if len(first) == 0 or len(second) == 0:
+            return 0.0
+        else:
+            return 1 - (_levenshtein_distance(first=first, second=second) / float(max(len(first), len(second))))
+
+    def LongestCommonSubstring(self, first, second):
+        # type: (str, str) -> str
+        """
+        Returns the longest substring contained within both strings.
+        """
+        return _longest_common_substring(first=first, second=second)
+
+    def CapitalizeWords(self, s):
+        # type: (str) -> str
+        return string.capwords(s)
+
+    def ParseQueryString(self, s, keep_blank_vaues=True, strict_parsing=False):
+        # type: (str, bool, bool) -> Dict[AnyStr, List[AnyStr]]
+        return parse_qs(s, keep_blank_vaues, strict_parsing)  # plex uses cgi.parse.qs instead
+
+    def ParseQueryStringAsList(self, s, keep_blank_vaues=True, strict_parsing=False):
+        # type: (str, bool, bool) -> List[Tuple[AnyStr, AnyStr]]
+        return parse_qsl(s, int(keep_blank_vaues), strict_parsing)  # plex uses cgi.parse.qsl instead
+
+    def SplitExtension(self, s):
+        # type: (AnyStr) -> Tuple[AnyStr, AnyStr]
+        return os.path.splitext(s)
+
+    def Dedent(self, s):
+        # type: (AnyStr) -> AnyStr
+        return textwrap.dedent(s)
+
+    def Clean(self, s, form='NFKD', lang=None, strip_diacritics=False, strip_punctuation=False):
+        # type: (AnyStr, str, Optional[str], bool, bool) -> AnyStr
+
+        # Guess at a language-specific encoding, should we need one.
+        encoding_map = {'ko': 'cp949'}
+
+        # precompose
+        try:
+            s = unicodedata.normalize(form, s.decode('utf-8'))
+        except Exception:
+            try:
+                s = unicodedata.normalize(form, s.decode(sys.getdefaultencoding()))
+            except Exception:
+                try:
+                    s = unicodedata.normalize(form, s.decode(sys.getfilesystemencoding()))
+                except Exception:
+                    try:
+                        s = unicodedata.normalize(form, s.decode('utf-16'))
+                    except Exception:
+                        try:
+                            s = unicodedata.normalize(form, s.decode(encoding_map.get(lang, 'ISO-8859-1')))
+                        except Exception:
+                            try:
+                                s = unicodedata.normalize(form, s)
+                            except Exception as e:
+                                _Log.Exception(type(e).__name__ + ' exception precomposing: ' + str(e))
+
+        # strip control characters
+        s = u''.join([c for c in s if not unicodedata.category(c).startswith('C')])
+
+        # strip punctuation
+        if strip_punctuation:
+            s = u''.join([c for c in s if not unicodedata.category(c).startswith('P')])
+
+        # strip diacritics
+        if strip_diacritics:
+            s = u''.join([c for c in s if not unicodedata.combining(c)])
+
+        return s
+
+
+class _UtilKit:
     def __init__(self):
         pass
 
@@ -112,7 +387,7 @@ class UtilKit:
 
     def VersionAtLeast(self, version_string, *components):
         # type: (Optional[str], *any) -> bool
-        return version_at_least(version_string, *components)
+        return _version_at_least(version_string, *components)
 
     def ListSortedByKey(self, l, key):  # noqa: E741  # cannot rename variables
         # type: (list, any) -> list
@@ -132,11 +407,11 @@ class UtilKit:
 
     def LevenshteinDistance(self, first, second):
         # type: (str, str) -> int
-        return levenshtein_distance(first, second)
+        return _levenshtein_distance(first, second)
 
     def LongestCommonSubstring(self, first, second):
         # type: (str, str) -> str
-        return longest_common_substring(first, second)
+        return _longest_common_substring(first, second)
 
     def Random(self):
         # type: () -> float
@@ -170,3 +445,7 @@ class UtilKit:
     def RandomSample(self, l, count):  # noqa: E741  # cannot rename variables
         # type: (list, int) -> list
         return random.sample(l, count)
+
+
+String = _StringKit()
+Util = _UtilKit()

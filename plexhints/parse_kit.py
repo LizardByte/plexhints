@@ -16,11 +16,11 @@ import yaml
 
 # local imports
 from plexhints._helpers import check_port, http_request
-from plexhints._constants import GLOBAL_DEFAULT_TIMEOUT
-from plexhints.log_kit import LogKit
+from plexhints import GLOBAL_DEFAULT_TIMEOUT
+from plexhints.log_kit import _LogKit
 
 # setup logging
-Log = LogKit()
+_Log = _LogKit()
 
 # conditional imports
 if sys.version_info.major < 3:
@@ -55,8 +55,8 @@ def json_from_string(json_string, encoding=None):
     try:
         return simplejson.loads(json_string, encoding)
     except simplejson.scanner.JSONDecodeError as e:
-        Log.Warn("Error decoding with simplejson, using demjson instead (this will cause a performance hit)")
-        Log.Exception('JSON decoding error - %s' % e)
+        _Log.Warn("Error decoding with simplejson, using demjson instead (this will cause a performance hit)")
+        _Log.Exception('JSON decoding error - %s' % e)
         return demjson.decode(json_string, encoding)
 
 
@@ -65,8 +65,8 @@ def json_to_string(obj):
     try:
         return simplejson.dumps(obj)
     except Exception:
-        Log.Warn("Error encoding with simplejson, trying demjson instead. This will cause a performance hit.")
-        Log.Exception('JSON encoding error')
+        _Log.Warn("Error encoding with simplejson, trying demjson instead. This will cause a performance hit.")
+        _Log.Exception('JSON encoding error')
         return demjson.encode(obj)
 
 
@@ -160,7 +160,7 @@ def xml_element_from_string(string, is_html=False, encoding=None, remove_blank_t
         try:
             return html.fromstring(markup, parser=HTMLParser(encoding='utf-8'))
         except Exception:
-            Log.Exception('Error parsing with lxml, falling back to soupparser')
+            _Log.Exception('Error parsing with lxml, falling back to soupparser')
             return soupparser.fromstring(string)
     else:
         return etree.fromstring(markup, parser=(etree.XMLParser(remove_blank_text=True) if remove_blank_text else None))
@@ -215,7 +215,7 @@ def xml_object_to_string(obj, encoding='utf-8'):
     return etree.tostring(obj, pretty_print=True, encoding=encoding)
 
 
-class HTMLKit:
+class _HTMLKit:
     """
     The HTML API is similar to the XML API, but is better suited to parsing HTML content. It is powered by the lxml
     `html <https://lxml.de/lxmlhtml.html>`_ library.
@@ -350,7 +350,7 @@ class HTMLKit:
         ).content, max_size=max_size)
 
 
-class JSONKit:
+class _JSONKit:
     """
     The JSON API provides methods for easily converting JSON-formatted strings into Python objects, and vice versa.
 
@@ -470,7 +470,7 @@ class JSONKit:
         return json_to_string(obj)
 
 
-class PlistKit:
+class _PlistKit:
     """
     The Plist API greatly simplifies handling content in Apple's XML-based property list format. Using these methods,
     data can easily be converted between property lists and regular Python objects. The top-level object of a property
@@ -586,7 +586,7 @@ class PlistKit:
         return plistlib.writePlistToString(obj)
 
 
-class RSSKit:
+class _RSSKit:
     """
     The RSS API provides methods for parsing content from RSS, RDF and ATOM feeds. The framework includes the excellent
     Universal Feed Parser library to achieve this functionality.
@@ -683,7 +683,7 @@ class RSSKit:
         ).content, max_size=max_size)
 
 
-class XMLKit:
+class _XMLKit:
     """
     The XML API provides methods for converting between XML-formatted strings and trees of XML Element objects. New
     XML element trees can also be constructed. The underlying functionality is provided by the lxml
@@ -950,7 +950,7 @@ class XMLKit:
         ).content, max_size=max_size)
 
 
-class YAMLKit:
+class _YAMLKit:
     def ObjectFromString(self, string, max_size=None):
         # type: (str, Optional[int]) -> dict
         """
@@ -1035,3 +1035,11 @@ class YAMLKit:
             follow_redirects=follow_redirects,
             method=method,
         ).content, max_size=max_size)
+
+
+HTML = _HTMLKit()
+JSON = _JSONKit()
+Plist = _PlistKit()
+RSS = _RSSKit()
+XML = _XMLKit()
+YAML = _YAMLKit()

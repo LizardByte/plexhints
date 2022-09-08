@@ -44,6 +44,7 @@
         "default": "Default Value",
         "hidden": "true",
         "comment": "The hidden key is undocumented by Plex. It applies to every 'type' of preference.",
-        "comment2": "This is unconfirmed, but it may hide the preference from interface."
+        "comment2": "This will be hidden from the plex interface, and the value will not be saved to the prefs xml.",
+        "comment3": "Todo - determine if the plugin has access to the preference."
     }
 ]

@@ -8,19 +8,19 @@ import tempfile
 from typing import AnyStr
 
 # local imports
-from plexhints.log_kit import LogKit
+from plexhints.log_kit import _LogKit
 
 # setup logging
-Log = LogKit()
+_Log = _LogKit()
 
 
-class CoreKit:
+class _CoreKit:
     def __init__(self):
         self.storage = self.Storage()
 
     class Storage:
         def __init__(self):
-            self.data_path = os.path.join('plexhints', 'Data', 'test')
+            self.data_path = os.path.join('plexhints-temp', 'Data', 'test')
             self.walk = os.walk
             self.copy = shutil.copy
             self.rename = shutil.move
@@ -39,7 +39,9 @@ class CoreKit:
             # Create a dictionary for storing file modification times.
             self._mtimes = {}
 
-            os.makedirs(os.path.join(self.data_path, 'DataItems'))
+            data_items_path = os.path.join(self.data_path, 'DataItems')
+            if not os.path.isdir(data_items_path):  # create directory if it doesn't exist
+                os.makedirs(data_items_path)
 
         def load(self, filename, binary=True, mtime_key=None):
             # type: (str, bool, str) -> AnyStr
@@ -55,7 +57,7 @@ class CoreKit:
                 data = f.read()
                 f.close()
             except Exception:
-                Log.Exception("Exception reading file %s", filename)
+                _Log.Exception("Exception reading file %s", filename)
                 data = None
                 raise
             finally:
@@ -64,7 +66,7 @@ class CoreKit:
         def save(self, filename, data, binary=True, mtime_key=None):
             # type: (str, AnyStr, bool, str) -> None
             if data is None:  # Don't attempt to save if no data was passed
-                Log.Error("Attempted to save no data to '%s' - aborting. Nothing has been saved to disk.", filename)
+                _Log.Error("Attempted to save no data to '%s' - aborting. Nothing has been saved to disk.", filename)
                 return
 
             filename = os.path.abspath(filename)
@@ -83,7 +85,10 @@ class CoreKit:
                     os.remove(filename)
                 shutil.move(temp_file, filename)
             except Exception:
-                Log.Exception("Exception writing to %s", filename)
+                _Log.Exception("Exception writing to %s", filename)
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
                 raise
+
+
+Core = _CoreKit()
