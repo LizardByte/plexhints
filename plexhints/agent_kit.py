@@ -1,11 +1,14 @@
 # future imports
 from __future__ import absolute_import  # import like python 3
 
+# standard imports
+from typing import Optional
+
 # local imports
-from plexhints.log_kit import LogKit
+from plexhints.log_kit import _LogKit
 
 # setup logging
-Log = LogKit()
+_Log = _LogKit()
 
 
 class MediaObject(object):
@@ -26,18 +29,18 @@ class MediaObject(object):
     _level_names = []
     _level_attribute_keys = []
 
-    def __init__(self, access_point, version=None, **kwargs):
+    def __init__(self, access_point=None, version=None, **kwargs):
         self._access_point = access_point
-        self.primary_agent = None
-        self.primary_metadata = None
-        self.guid = None
-        self.filename = None
-        self.parent_metadata = None
-        self.parentGUID = None
+        self.primary_agent = None  # type: Optional[str]
+        self.primary_metadata = None  # type: Optional[str]
+        self.guid = None  # type: Optional[str]
+        self.filename = None  # type: Optional[str]
+        self.parent_metadata = None  # type: Optional[str]
+        self.parentGUID = None  # type: Optional[str]
         self.tree = None
-        self.id = None
-        self.hash = None
-        self.originally_available_at = None
+        self.id = None  # type: Optional[str]
+        self.hash = None  # type: Optional[str]
+        self.originally_available_at = None  # type: Optional[int]
 
         cls = type(self)
         for name in cls._attrs:
@@ -50,10 +53,10 @@ class MediaObject(object):
         # Get the media tree if we got an ID passed down.
         if self.id is not None:
             try:
-                setattr(self, 'tree', Media.TreeForDatabaseID(self.id, type(self)._level_names,
-                                                              level_attribute_keys=type(self)._level_attribute_keys))
+                setattr(self, 'tree', _Media.TreeForDatabaseID(dbid=self.id, level_names=type(self)._level_names,
+                                                               level_attribute_keys=type(self)._level_attribute_keys))
             except Exception:
-                Log.Exception(fmt="Exception when constructing media object")
+                _Log.Exception(fmt="Exception when constructing media object")
 
         # Load primary agent's metadata.
         if self.primary_agent is not None and self.guid is not None:
@@ -74,91 +77,108 @@ class MediaObject(object):
             return object.__getattribute__(self, name)
 
 
-class Media(object):
+class _Media(object):
 
     @classmethod
     def TreeForDatabaseID(cls, dbid, level_names=[], host='127.0.0.1', parent_id=None, level_attribute_keys=[]):
+        # type: (str, list, str, Optional[str], list) -> Optional[dict]
         # todo
         tree = None
         return tree
 
     class Movie(MediaObject):
-        _model_name = 'Movie'
-        _type_id = 1
-        _attrs = dict(
-            primary_metadata=None,
-            name=None,
-            openSubtitlesHash=None,
-            year=None,
-            duration=None,
-        )
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'Movie'
+            self._type_id = 1
+            self._attrs = dict()  # removed in favor of defining values below
+
+            self.primary_metadata = None  # type: Optional[str]
+            self.name = None  # type: Optional[str]
+            self.openSubtitlesHash = None  # type: Optional[str]
+            self.year = None  # type: Optional[int]
+            self.duration = None  # type: Optional[int]
+
+            # todo - couldn't find in Plex framework, but this property does exist
+            self.title = None  # type: Optional[str]
 
     class TV_Show(MediaObject):
-        _model_name = 'TV_Show'
-        _type_id = 2
-        _attrs = dict(
-            show=None,
-            season=None,
-            episode=None,
-            name=None,
-            openSubtitlesHash=None,
-            year=None,
-            duration=None,
-            episodic=True
-        )
-        _level_names = ['seasons', 'episodes']
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'TV_Show'
+            self._type_id = 2
+            self._attrs = dict()  # removed in favor of defining values below
+            self._level_names = ['seasons', 'episodes']
+
+            self.show = None  # type: Optional[str]
+            self.season = None  # type: Optional[int]
+            self.episode = None  # type: Optional[int]
+            self.name = None  # type: Optional[str]
+            self.openSubtitlesHash = None  # type: Optional[str]
+            self.year = None  # type: Optional[int]
+            self.duration = None  # type: Optional[int]
+            self.episodic = True  # type: bool
 
     class Album(MediaObject):
-        _model_name = 'LegacyAlbum'
-        _media_type_name = 'Album'
-        _parent_model_name = 'Artist'
-        _parent_link_name = 'artist'
-        _parent_set_attr_name = 'albums'
-        _type_id = 9
-        _attrs = dict(
-            name=None,
-            artist=None,
-            album=None,
-            track=None,
-            index=None,
-            parentGUID=None
-        )
-        _level_names = ['tracks']
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'LegacyAlbum'
+            self._media_type_name = 'Album'
+            self._parent_model_name = 'Artist'
+            self._parent_link_name = 'artist'
+            self._parent_set_attr_name = 'albums'
+            self._type_id = 9
+            self._attrs = dict()  # removed in favor of defining values below
+            self._level_names = ['tracks']
+
+            self.name = None  # type: Optional[str]
+            self.artist = None  # type: Optional[str]
+            self.album = None  # type: Optional[str]
+            self.track = None  # type: Optional[str]
+            self.index = None  # type: Optional[int]
+            self.parentGUID = None  # type: Optional[str]
 
     class Artist(MediaObject):
-        _model_name = 'LegacyArtist'
-        _versioned_model_names = {
-            2: 'ModernArtist'
-        }
-        _media_type_name = 'Artist'
-        _type_id = 8
-        _attrs = dict(
-            artist=None,
-            album=None,
-            track=None,
-            index=None
-        )
-        _level_names = ['albums', 'tracks']
-        _level_attribute_keys = ['guid']
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'LegacyArtist'
+            self._versioned_model_names = {
+                2: 'ModernArtist'
+            }
+            self._media_type_name = 'Artist'
+            self._type_id = 8
+            self._attrs = dict()  # removed in favor of defining values below
+            self._level_names = ['albums', 'tracks']
+            self._level_attribute_keys = ['guid']
+
+            self.artist = None  # type: Optional[str]
+            self.album = None  # type: Optional[str]
+            self.track = None  # type: Optional[str]
+            self.index = None  # type: Optional[int]
 
     class PhotoAlbum(MediaObject):
-        _model_name = 'PhotoAlbum'
-        _type_id = 12
-        _attrs = dict()
-        _level_names = ['photos']
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'PhotoAlbum'
+            self._type_id = 12
+            self._attrs = dict()
+            self._level_names = ['photos']
 
     class Photo(MediaObject):
-        _model_name = 'Photo'
-        _type_id = 13
-        _attrs = dict()
+        def __init__(self, **kwargs):
+            super(MediaObject, self).__init__(**kwargs)
+            self._model_name = 'Photo'
+            self._type_id = 13
+            self._attrs = dict()
 
 
-class AgentKit:
+class _AgentKit:
     """
     Fake Agent class with available subclasses.
 
     https://web.archive.org/web/https://dev.plexapp.com/docs/agents/basics.html#defining-an-agent-class
     """
+
     def __init__(self):
         pass
 
@@ -193,7 +213,7 @@ class AgentKit:
         """
         This is a fake Agent.Photos class.
 
-        This class is undocumented in the original docs, but appears to be available in the Framework.
+        .. Note:: This class is undocumented in the original docs, but appears to be available in the Framework.
         """
 
         def __init__(self):
@@ -206,3 +226,7 @@ class AgentKit:
         def __init__(self):
             self.name = 'TV_Shows'
             self.media_type = Media.TV_Show
+
+
+Agent = _AgentKit()
+Media = _Media()

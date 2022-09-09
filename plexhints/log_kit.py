@@ -6,13 +6,21 @@ import logging
 import sys
 import traceback
 
+# allow writing non ascii characters to stdout
+try:
+    reload(sys)  # python < 3.5
+except NameError:
+    pass
+else:
+    sys.setdefaultencoding('utf-8')
+
 # Create and Configure Logger
 logging.basicConfig(stream=sys.stdout,
                     format="%(asctime)s (tbd): %(levelname)s (plexhints:tbd) - %(message)s",
                     level=logging.DEBUG)
 
 
-class LogKit:
+class _LogKit:
     """
     The Log class.
 
@@ -54,14 +62,14 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Debug('This is a debug message.')
         ...
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> message_type = 'debug'
         >>> Log.Debug('This is a %s message.', message_type)
         ...
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Debug('This is a %(message_type)s message.', {'message_type': 'debug'})
         ...
         """
@@ -85,7 +93,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Info('This is a info message.')
         ...
         """
@@ -109,7 +117,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Warn('This is a warning message.')
         ...
         """
@@ -133,7 +141,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Error('This is an error message.')
         ...
         """
@@ -157,7 +165,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Critical('This is a critical message.')
         ...
         """
@@ -185,7 +193,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> try:
         >>>     int('Hello World!')
         >>> except ValueError:
@@ -193,7 +201,7 @@ class LogKit:
         ...
         Traceback (most recent call last):
         ...
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> try:
         >>>     int('Hello World!')
         >>> except ValueError as e:
@@ -214,7 +222,7 @@ class LogKit:
 
         Examples
         --------
-        >>> from plexhints import Log
+        >>> from plexhints.log_kit import Log
         >>> Log.Stack()
         ...
         """
@@ -224,3 +232,6 @@ class LogKit:
             if sys.prefix not in line:
                 stack += '  %s\n' % line.strip()
         self.Debug("Current stack:\n" + stack)
+
+
+Log = _LogKit()

@@ -14,17 +14,17 @@ from requests.cookies import RequestsCookieJar
 
 # local imports
 from plexhints._helpers import check_port, cookie_jar, http_request
-from plexhints._constants import GLOBAL_DEFAULT_TIMEOUT
+from plexhints import GLOBAL_DEFAULT_TIMEOUT
 from plexhints.const import PLEX_FRAMEWORK_VERSION
-from plexhints.log_kit import LogKit
+from plexhints.log_kit import _LogKit
 
 # setup logging
-Log = LogKit()
+_Log = _LogKit()
 
 password_manager = HTTPPasswordMgrWithDefaultRealm()
 
 
-class HTTPKit:
+class _HTTPKit:
     """
     The HTTP API provides methods for making HTTP requests and interacting with the framework's HTTP subsystem.
     """
@@ -63,7 +63,7 @@ class HTTPKit:
                 details='The HTTP.SetCacheTime() function is deprecated. Use the HTTP.CacheTime property instead.')
     def SetCacheTime(self, cacheTime):
         # type: (float) -> None
-        Log.Warn('The HTTP.SetCacheTime() function is deprecated. Use the HTTP.CacheTime property instead.')
+        _Log.Warn('The HTTP.SetCacheTime() function is deprecated. Use the HTTP.CacheTime property instead.')
         self._cache_time = cacheTime
 
     @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
@@ -71,14 +71,14 @@ class HTTPKit:
                         'Use HTTP.Headers[] to get and set headers instead.')
     def SetHeader(self, header, value):
         # type: (dict, any) -> None
-        Log.Warn('The HTTP.SetHeader() function is deprecated. Use HTTP.Headers[] to get and set headers instead.')
+        _Log.Warn('The HTTP.SetHeader() function is deprecated. Use HTTP.Headers[] to get and set headers instead.')
         self.Headers[header] = value
 
     @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='The HTTP.SetTimeout() function is deprecated. Use the Network.Timeout property instead.')
     def SetTimeout(self, timeout):
         # type: (float) -> None
-        Log.Warn('The HTTP.SetTimeout() function is deprecated. Use the Network.Timeout property instead.')
+        _Log.Warn('The HTTP.SetTimeout() function is deprecated. Use the Network.Timeout property instead.')
         self._default_timeout = timeout
 
     def Request(self, url, values=None, headers={}, cacheTime=None, encoding=None, errors=None,
@@ -176,7 +176,7 @@ class HTTPKit:
                 details='HTTP.GetCookiesForURL() is deprecated - please use HTTP.CookiesForURL() instead.')
     def GetCookiesForURL(self, url):
         # type: (str) -> Optional[dict]
-        Log.Warn("HTTP.GetCookiesForURL() is deprecated - please use HTTP.CookiesForURL() instead.")
+        _Log.Warn("HTTP.GetCookiesForURL() is deprecated - please use HTTP.CookiesForURL() instead.")
         return self.CookiesForURL(url)
 
     def SetPassword(self, url, username, password, realm=None):
@@ -204,7 +204,7 @@ class HTTPKit:
     def ClearCookies(self):
         # type: () -> None
         """
-      Clears the plug-in's HTTP cookies.
+        Clears the plug-in's HTTP cookies.
         """
         cookie_jar.clear()
 
@@ -222,4 +222,7 @@ class HTTPKit:
         """
         Random user agents are not supported. This function should no longer be used.
         """
-        Log.Error("Randomized user agent strings are no longer supported.")
+        _Log.Error("Randomized user agent strings are no longer supported.")
+
+
+HTTP = _HTTPKit()
