@@ -79,11 +79,10 @@ def update_sys_path():
 
     # setup directories to check... allows code to be run from subdirectories such as `docs`
     while True:
-        parent_path = os.path.dirname(current_directory)
-        if parent_path:
-            if parent_path not in directory_tests:
-                directory_tests.append(parent_path)
-                current_directory = parent_path
+        if current_directory:
+            if current_directory not in directory_tests:
+                directory_tests.append(current_directory)
+                current_directory = os.path.dirname(current_directory)
             else:
                 break
         else:
@@ -92,10 +91,10 @@ def update_sys_path():
     for directory in directory_tests:
         tmp_contents_path = list(contents_path)  # copy the original list
         while True:
+            tmp_dir = os.path.join(directory, os.path.join(*tmp_contents_path))
             try:
-                if os.path.isdir(os.path.join(directory, *tmp_contents_path)):
-                    sys.path.append(os.path.join(directory, *tmp_contents_path))
-                    return True
+                if os.path.isdir(tmp_dir):
+                    sys.path.append(tmp_dir)
                 else:
                     try:
                         tmp_contents_path.pop(0)
