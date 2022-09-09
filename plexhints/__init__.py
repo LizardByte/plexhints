@@ -95,6 +95,7 @@ def update_sys_path():
             try:
                 if os.path.isdir(tmp_dir):
                     sys.path.append(tmp_dir)
+                    return True
                 else:
                     try:
                         tmp_contents_path.pop(0)
