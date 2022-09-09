@@ -469,12 +469,13 @@ class Language:
     NoLanguage = 'xn'
 
 
-class LocaleKit:
+class _LocaleKit:
 
     def __init__(self):
         self.Language = Language
         self.CountryCodes = CountryCodes
 
+        # todo - set the default locale in a better way
         self._default_locale = 'en-us'
 
     @property
@@ -483,7 +484,6 @@ class LocaleKit:
         """
         Returns the default locale currently in use by the plug-in, e.g. ``en-us``.
         """
-
         return self._default_locale
 
     @DefaultLocale.setter
@@ -497,6 +497,7 @@ class LocaleKit:
         """
         Returns the user's country, obtained via IP-based geolocation, e.g. ``US``.
         """
+        # todo
         return 'US'
 
     @property
@@ -505,6 +506,7 @@ class LocaleKit:
         """
         Returns the locale of the user currently making a request to the plug-in, or *None* if no locale was provided.
         """
+        # todo
         return
 
     def LocalString(self, key):
@@ -515,6 +517,7 @@ class LocaleKit:
 
         See `String files` for more information on providing localized versions of strings.
         """
+        # todo
         return ''
 
     def LocalStringWithFormat(self, key, *args):
@@ -523,4 +526,8 @@ class LocaleKit:
         Retrieves the localized version of a string with the given key, and formats it using the
         given arguments.
         """
+        # todo
         return ''
+
+
+Locale = _LocaleKit()

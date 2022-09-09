@@ -1,32 +1,26 @@
 # future imports
 from __future__ import absolute_import  # import like python 3
 
-
-class ProxyObject(object):
-    def __init__(self, proxy_name, proxy_type, data=None, sort_order=None, ext=None, index=None, codec=None,
-                 format=None, default=None, forced=None, **kwargs):
-        self._proxy_name = proxy_name
-        self._proxy_type = proxy_type
-        self._data = data
-        self._sort_order = sort_order
-        self._ext = ext
-        self._index = index
-        self._codec = codec
-        self._format = format
-        self._default = default
-        self._forced = forced
-        self._extras = kwargs
-
-    def __getitem__(self, name):
-        return self._extras.get(name)
-
-    def __setitem__(self, name, value):
-        self._extras[name] = value
+# local imports
+from plexhints.template_kit import _ProxyObject
 
 
-class ProxyKit(object):
+def proxy_object_generator(proxy_name):
+    # type: (str) -> object
+    def proxy_function(data, sort_order=None, ext=None, index=None, **kwargs):
+        # type: (bytes, int, str, int, **any) -> _ProxyObject
+        return _ProxyObject(proxy_name=proxy_name, proxy_type=proxy_name.lower(), data=data, sort_order=sort_order,
+                            ext=ext, index=index, **kwargs)
+
+    return proxy_function
+
+
+class _ProxyKit(object):
     def __init__(self):
-        self.Preview = ProxyObject(proxy_name='Preview', proxy_type='preview')
-        self.Media = ProxyObject(proxy_name='Media', proxy_type='media')
-        self.LocalFile = ProxyObject(proxy_name='LocalFile', proxy_type='localfile')
-        self.Remote = ProxyObject(proxy_name='Remote', proxy_type='remote')
+        self.Preview = proxy_object_generator(proxy_name='Preview')
+        self.Media = proxy_object_generator(proxy_name='Media')
+        self.LocalFile = proxy_object_generator(proxy_name='LocalFile')
+        self.Remote = proxy_object_generator(proxy_name='Remote')
+
+
+Proxy = _ProxyKit()
