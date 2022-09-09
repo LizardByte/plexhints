@@ -91,8 +91,10 @@ def update_sys_path():
     for directory in directory_tests:
         tmp_contents_path = list(contents_path)  # copy the original list
         while True:
-            tmp_dir = os.path.join(directory, os.path.join(*tmp_contents_path))
             try:
+                # this will throw a `TypeError` when the `tmp_contents_path` list is empty, then we `continue`
+                tmp_dir = os.path.join(directory, os.path.join(*tmp_contents_path))
+
                 if os.path.isdir(tmp_dir):
                     sys.path.append(tmp_dir)
                     return True
