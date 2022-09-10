@@ -104,4 +104,4 @@ def update_sys_path():
                     except IndexError:
                         return False
             except TypeError:
-                continue
+                break
