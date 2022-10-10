@@ -38,8 +38,12 @@ of Plex. You should only import what is necessary, but all examples are shown.
 # standard imports
 import sys
 
-# plexhints
-if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
+# plex debugging
+try:
+    import plexhints  # noqa: F401
+except ImportError:
+    pass
+else:  # the code is running outside of Plex
     from plexhints import plexhints_setup, update_sys_path
     plexhints_setup()  # read the plugin plist file and determine if plexhints should use elevated policy or not
     update_sys_path()  # when running outside plex, append the path
@@ -88,8 +92,12 @@ and the `update_sys_path` method as they are no longer needed.
 # standard imports
 import sys
 
-# plexhints
-if 'plexscripthost' not in sys.executable.lower():  # the code is running outside of Plex
+# plex debugging
+try:
+    import plexhints  # noqa: F401
+except ImportError:
+    pass
+else:  # the code is running outside of Plex
     from plexhints.log_kit import Log
 ```
 
@@ -103,7 +111,7 @@ git clone https://github.com/squaresmile/Plex-Plug-Ins.git
 A snapshot of the original Plex developer [docs](https://web.archive.org/web/https://dev.plexapp.com/docs/index.html)
 
 ## Integrate with GitHub
-Filename:`.github\workflows\CI.yml`
+Filename:`.github/workflows/CI.yml`
 ```yaml
 name: CI
 
