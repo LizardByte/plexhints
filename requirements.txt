@@ -9,7 +9,7 @@ BeautifulSoup4==4.9.3;python_version<"3"
 BeautifulSoup4==4.11.1;python_version>="3"
 
 demjson==2.2.4;python_version<"3"
-demjson3==3.0.5;python_version>="3"
+demjson3==3.0.6;python_version>="3"
 
 feedparser==5.2.1;python_version<"3"
 feedparser==6.0.10;python_version>="3"
