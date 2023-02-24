@@ -17,6 +17,8 @@ _Log = _LogKit()
 class _CoreKit:
     def __init__(self):
         self.storage = self.Storage()
+        self.app_support_path = None
+        self.bundle_path = None
 
     class Storage:
         def __init__(self):
