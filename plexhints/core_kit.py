@@ -17,8 +17,8 @@ _Log = _LogKit()
 class _CoreKit:
     def __init__(self):
         self.storage = self.Storage()
-        self.app_support_path = None
-        self.bundle_path = None
+        self.app_support_path = os.path.join('plexhints-temp', 'Plex Media Server')
+        self.bundle_path = os.path.join(self.app_support_path, 'Plug-ins', 'test.bundle')
 
     class Storage:
         def __init__(self):
