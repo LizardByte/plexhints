@@ -19,6 +19,8 @@ class _CoreKit:
         self.storage = self.Storage()
         self.app_support_path = os.path.join('plexhints-temp', 'Plex Media Server')
         self.bundle_path = os.path.join(self.app_support_path, 'Plug-ins', 'test.bundle')
+        self.bundled_plugins_path = os.path.join(self.app_support_path, 'Plug-ins')
+        self.plugin_support_path = os.path.join(self.app_support_path, 'Plug-in Support')
 
     class Storage:
         def __init__(self):
