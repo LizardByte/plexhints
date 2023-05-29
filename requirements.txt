@@ -6,7 +6,7 @@ simplejson==3.18.4
 
 # version dependent
 BeautifulSoup4==4.9.3;python_version<"3"
-BeautifulSoup4==4.11.2;python_version>="3"
+BeautifulSoup4==4.12.2;python_version>="3"
 
 demjson==2.2.4;python_version<"3"
 demjson3==3.0.6;python_version>="3"
