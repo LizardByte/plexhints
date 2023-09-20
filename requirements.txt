@@ -15,7 +15,7 @@ feedparser==5.2.1;python_version<"3"
 feedparser==6.0.10;python_version>="3"
 
 PyYAML==5.4.1;python_version<"3"
-PyYAML==6.0;python_version>="3"
+PyYAML==6.0.1;python_version>="3"
 
 requests==2.27.1;python_version<"3"
 requests==2.31.0;python_version>="3"
