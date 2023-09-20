@@ -3,6 +3,7 @@ from __future__ import absolute_import  # import like python 3
 
 # standard imports
 import os
+import platform
 import shutil
 import tempfile
 from typing import AnyStr
@@ -13,11 +14,33 @@ from plexhints.log_kit import _LogKit
 # setup logging
 _Log = _LogKit()
 
+_APP_DATA_PATH = dict(
+    Darwin="{}/Library/Application Support".format(os.getenv('HOME')),
+    Linux="/var/lib/plexmediaserver/Library/Application Support",
+    Windows="{}".format(os.getenv('LOCALAPPDATA'))
+)
+_PLEX_MEDIA_SERVER_PATH = dict(
+    Darwin="{}/Plex Media Server".format(_APP_DATA_PATH['Darwin']),
+    Linux="{}/Plex Media Server".format(_APP_DATA_PATH['Linux']),
+    Windows="{}\\Plex Media Server".format(_APP_DATA_PATH['Windows']),
+)
+# macOS plugin log path is not based on the app data path
+# https://support.plex.tv/articles/201106148-channel-log-files/
+_PLUGIN_LOGS_PATH = dict(
+    Darwin="{}/Library/Logs/Plex Media Server/PMS Plugin Logs".format(os.getenv('HOME')),
+    Linux="{}/Logs/PMS Plugin Logs".format(_PLEX_MEDIA_SERVER_PATH['Linux']),
+    Windows="{}\\Logs\\PMS Plugin Logs".format(_PLEX_MEDIA_SERVER_PATH['Windows']),
+)
+PLATFORM = platform.system()
+APP_DATA_PATH = _APP_DATA_PATH[PLATFORM]
+PLEX_MEDIA_SERVER_PATH = _PLEX_MEDIA_SERVER_PATH[PLATFORM]
+PLUGIN_LOGS_PATH = _PLUGIN_LOGS_PATH[PLATFORM]
+
 
 class _CoreKit:
     def __init__(self):
         self.storage = self.Storage()
-        self.app_support_path = os.path.join('plexhints-temp', 'Plex Media Server')
+        self.app_support_path = os.path.join(APP_DATA_PATH, 'Plex Media Server')
         self.bundle_path = os.path.join(self.app_support_path, 'Plug-ins', 'test.bundle')
         self.bundled_plugins_path = os.path.join(self.app_support_path, 'Plug-ins')
         self.plugin_support_path = os.path.join(self.app_support_path, 'Plug-in Support')
