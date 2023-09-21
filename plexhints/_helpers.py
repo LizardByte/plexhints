@@ -77,7 +77,6 @@ def http_request(url, values=None, headers=None, cache_time=None, encoding=None,
     response = request_methods[method](url=url,
                                        data=values if values else data,
                                        headers=headers,
-                                       cookies=cookie_jar,
                                        timeout=timeout,
                                        allow_redirects=follow_redirects,
                                        )
