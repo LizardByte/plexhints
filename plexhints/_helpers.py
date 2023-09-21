@@ -13,7 +13,8 @@ import requests_cache
 from requests_cache import CachedSession
 
 # local imports
-from plexhints import ELEVATED_POLICY, GLOBAL_DEFAULT_TIMEOUT
+import plexhints
+from plexhints import GLOBAL_DEFAULT_TIMEOUT
 
 cookie_jar = RequestsCookieJar()
 session = CachedSession()
@@ -37,7 +38,7 @@ def check_port(url):
         If accessing a Plex server url and not using an elevated `PlexPluginCodePolicy` in the plist file.
         Plex Framework will raise ``Framework.exceptions.FrameworkException`` instead.
     """
-    if ':32400/' in url and not ELEVATED_POLICY:
+    if ':32400/' in url and not plexhints.ELEVATED_POLICY:
         raise Exception("Accessing the media server's HTTP interface is not permitted.")
 
 
@@ -76,7 +77,6 @@ def http_request(url, values=None, headers=None, cache_time=None, encoding=None,
     response = request_methods[method](url=url,
                                        data=values if values else data,
                                        headers=headers,
-                                       cookies=cookie_jar,
                                        timeout=timeout,
                                        allow_redirects=follow_redirects,
                                        )
