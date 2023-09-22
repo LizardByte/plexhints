@@ -102,11 +102,8 @@ else:  # the code is running outside of Plex
 ```
 
 ## Developer References:
-A mirror of Plex's [Framework](https://github.com/squaresmile/Plex-Plug-Ins/tree/master/Framework.bundle/Contents/Resources/Versions/2/Python/Framework)
-
-```bash
-git clone https://github.com/squaresmile/Plex-Plug-Ins.git
-```
+A mirror of Plex's Framework is included as a submodule, which can be found
+[here](/references/Plex-Plug-Ins/Framework.bundle/Contents/Resources/Versions/2/Python/Framework)
 
 A snapshot of the original Plex developer [docs](https://web.archive.org/web/https://dev.plexapp.com/docs/index.html)
 

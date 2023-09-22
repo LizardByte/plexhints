@@ -1,0 +1,4 @@
+[submodule "references/Plex-Plug-Ins"]
+	path = references/Plex-Plug-Ins
+	url = https://github.com/squaresmile/Plex-Plug-Ins.git
+	branch = master
