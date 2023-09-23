@@ -2,10 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleIdentifier</key>
-    <string>com.example.plugin</string>
-    <key>PlexAgentAttributionText</key>
-    <string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>dev.lizardbyte.plexhints</string>
+	<key>CFBundlePackageType</key>
+	<string>AAPL</string>
+	<key>CFBundleSignature</key>
+	<string>hook</string>
+	<key>PlexAgentAttributionText</key>
+	<string>
         <![CDATA[
             <!-- Import custom css -->
             <style>
@@ -21,15 +29,24 @@
                 <strong>plexhints</strong><br>
             </div>
             <br>
-            <a href="https://github.com/lizardbyte/plexhints" target="_blank">plexhints</a> is a type hinting
-            library for Plex plugin development.
+            A plugin by <a href="https://app.lizardbyte.dev" target="_blank">LizardByte</a> used to plugin
+            developers with CI/CD workflows.
             <br>
             <br>
             <table>
                 <tr>
                     <td>Version:  <i class="fas fa-fw fa-times-circle" style="color:red"></i></td>
-                    <td>source</td>
-                    <td>| <a href="https://github.com/LizardByte/plexhints/releases/latest" target="_blank">Releases</a></td>
+                    <td>development build</td>
+                    <td>| <a href="https://github.com/LizardByte/plugins/releases/latest"
+                             target="_blank">Releases</a></td>
+                </tr>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <td><i class="fa fa-fw fa-question-circle"></i> Reference:</td>
+                    <td>| <i class="fas fa-fw fa-file-lines"></i> <a
+                            href="https://docs.lizardbyte.dev/projects/plexhints" target="_blank">Docs</a></td>
                 </tr>
             </table>
             <br>
@@ -42,26 +59,29 @@
             </script>
         ]]>
     </string>
-    <key>PlexFrameworkVersion</key>
-    <string>2</string>
-    <key>PlexPluginMode</key>
-    <string>Agent</string>
-    <key>PlexClientPlatforms</key>
-    <string></string>
-    <key>PlexClientPlatformExclusions</key>
-    <string></string>
-    <key>PlexPluginRegions</key>
-    <array>
-        <string></string>
-    </array>
-    <key>PlexPluginDebug</key>
-    <array><string>1</string>
-    </array>
-    <key>PlexPluginCodePolicy</key>
-    <string>Elevated</string>
-    <key>PlexPluginClass</key>
-    <string>agent</string>
-    <key>PlexPluginConsoleLogging</key>
-    <string>0</string>
+	<key>PlexBundleVersion</key>
+	<string>development build</string>
+	<key>PlexClientPlatformExclusions</key>
+	<string></string>
+	<key>PlexClientPlatforms</key>
+	<string></string>
+	<key>PlexFrameworkVersion</key>
+	<string>2</string>
+	<key>PlexPluginClass</key>
+	<string>Resource</string>
+	<key>PlexPluginCodePolicy</key>
+	<string>Elevated</string>
+	<key>PlexPluginConsoleLogging</key>
+	<string>0</string>
+	<key>PlexPluginDebug</key>
+	<string>1</string>
+	<key>PlexPluginMode</key>
+	<string>Daemon</string>
+	<key>PlexPluginRegions</key>
+	<array>
+		<string></string>
+	</array>
+	<key>PlexShortBundleVersion</key>
+	<string>development build</string>
 </dict>
 </plist>
