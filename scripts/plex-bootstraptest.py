@@ -17,9 +17,10 @@ from builtins import input
 from builtins import range
 import argparse
 import os
-import platform
+import re
 import shutil
 import socket
+import sys
 import time
 from plexapi.backports import glob
 from plexapi.backports import makedirs
@@ -37,6 +38,8 @@ from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 from plexapi.utils import SEARCHTYPES
 from tqdm import tqdm
+
+from plexhints.core_kit import PLEX_MEDIA_SERVER_PATH, PLUGIN_LOGS_PATH
 
 DOCKER_CMD = [
     "docker",
@@ -88,6 +91,9 @@ BASE_DIR_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STUB_MOVIE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "video_stub.mp4")
 STUB_MP3_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "audio_stub.mp3")
 STUB_IMAGE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "cute_cat.jpg")
+
+# global variables
+processed_media = 0
 
 
 def check_ext(path, ext):
@@ -291,6 +297,7 @@ def add_library_section(server, section):
 
 
 def create_section(server, section, opts):  # noqa: C901
+    global processed_media
     processed_media = 0
     expected_media_count = section.pop("expected_media_count", 0)
     expected_media_type = (section["type"],)
@@ -463,6 +470,12 @@ if __name__ == "__main__":  # noqa: C901
         default=False,
         action="store_true",
     )  # noqa
+    parser.add_argument(
+        "--show-token-plexhints",
+        help="Try to find the access token after bootstrap. Requires the plexhinsts.bundle to be installed.",
+        default=False,
+        action="store_true",
+    )  # noqa
     opts, _ = parser.parse_known_args()
 
     account = get_plex_account(opts)
@@ -470,26 +483,21 @@ if __name__ == "__main__":  # noqa: C901
     media_path = os.path.join(path, "media")
     makedirs(media_path, exist_ok=True)
 
-    APP_DATA_PATH = dict(
-        Darwin="{}/Library/Application Support/Plex Media Server".format(os.getenv('HOME')),
-        Linux="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server",
-        Windows="{}\\Plex Media Server".format(os.getenv('LOCALAPPDATA'))
-    )
-
     # copy the plugin
     if opts.plugin_bundle_destination == "auto":
         opts.plugin_bundle_destination = os.path.join(
             path, "db", "Library", "Application Support", "Plex Media Server", "Plug-ins", "plexhints.bundle") if \
             opts.no_docker is False else os.path.join(
-            APP_DATA_PATH[platform.system()], "Plug-ins", "plexhints.bundle")
+            PLEX_MEDIA_SERVER_PATH, "Plug-ins", "plexhints.bundle")
 
     try:
         shutil.copytree(opts.plugin_bundle_source, opts.plugin_bundle_destination)
     except OSError as e:
-        if 'file exists' in str(e).lower():
+        if 'file exists' in str(e).lower() or 'file already exists' in str(e).lower():
             print("Warning: Skipping copy, plugin already exists at %s" % opts.plugin_bundle_destination)
         else:
-            print("Warning: %s" % e)
+            print("Error: %s" % e)
+            raise SystemExit("Error copying plugin bundle to %s" % opts.plugin_bundle_destination)
     else:
         print("Copied plugin bundle to %s" % opts.plugin_bundle_destination)
 
@@ -715,4 +723,35 @@ if __name__ == "__main__":  # noqa: C901
     print("Base URL is %s" % server.url("", False))
     if account and opts.show_token:
         print("Auth token is %s" % account.authenticationToken)
+    if opts.show_token_plexhints:
+        sys.path.append('Contents')
+        from Code import constants
+        plugin_log_file = os.path.join(PLUGIN_LOGS_PATH, "{}.log".format(constants.plugin_identifier))
+        print("plexhints plugin log file: {}".format(plugin_log_file))
+
+        # wait up to 180 seconds
+        plex_token = None
+        counter = 0
+        while plex_token is None and counter < 180:
+            if os.path.isfile(plugin_log_file):
+                with open(plugin_log_file, 'r') as f:
+                    lines = f.readlines()
+
+                # Compile the regex pattern
+                plex_token_pattern = re.compile(r'plex-x-token: ([a-z0-9]+)')
+
+                for line in lines:
+                    match = plex_token_pattern.search(line)
+                    if match:
+                        plex_token = match.group(1)
+                        # write the token to a file
+                        with open(os.path.join(os.getcwd(), ".plex_token"), 'w') as token_f:
+                            token_f.write(plex_token)
+                        break
+            time.sleep(1)
+            counter += 1
+        if not os.path.isfile(plugin_log_file):
+            raise SystemExit("Could not find plexhints plugin log file")
+        if not plex_token:
+            raise SystemExit("Could not find plex token in plexhints plugin log file")
     print("Server %s is ready to use!" % opts.server_name)

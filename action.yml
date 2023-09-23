@@ -1,0 +1,282 @@
+---
+# This action sets up a Plex Media Server for testing.
+
+# example to get post step: https://github.com/actions/runner/issues/1478#issuecomment-1586075146
+
+name: "Plex Media Server Setup"
+description: "This action will install and prepare a Plex Media Server for testing."
+
+inputs:
+  plugin_bunldes_to_install:
+    description: >-
+      Space separated ist of plugin bundles to install. Provide the relative or absolute path to the bundle.
+    required: false
+    default: ""
+  use_docker:
+    description: Whether to use docker to run the server.
+    required: false
+    default: "false"
+  without_movies:
+    description: Whether to create a movies library (new agent).
+    required: false
+    default: "false"
+  without_movies_imdb:
+    description: Whether to create a movies library (IMDB agent).
+    required: false
+    default: "false"
+  without_movies_tmdb:
+    description: Whether to create a movies library (TMDB agent).
+    required: false
+    default: "false"
+  without_shows:
+    description: Whether to create a TV shows library.
+    required: false
+    default: "false"
+  without_music:
+    description: Whether to create a music library.
+    required: false
+    default: "false"
+  without_photos:
+    description: Whether to create a photos library.
+    required: false
+    default: "false"
+outputs:
+  plex_app_data_path:
+    description: "The path to the app data directory."
+    value: ${{ steps.plex.outputs.app_data_path }}
+  plex_plugin_log_path:
+    description: "The path to the plugin log directory."
+    value: ${{ steps.plex.outputs.plugin_log_path }}
+  plex_plugin_path:
+    description: "The path to the plugin directory."
+    value: ${{ steps.plex.outputs.plugin_path }}
+  plex_token:
+    description: "The Plex token for the server."
+    value: ${{ steps.token.outputs.plex_token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build plist
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Build plist"
+        python ./scripts/build_plist.py
+        echo "::endgroup::"
+
+    - name: Setup plexhints.bundle
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Setup plexhints.bundle"
+        mkdir -p ./plexhints.bundle/Contents
+
+        # put Contents directory in bundle
+        cp -r ./Contents/. ./plexhints.bundle/Contents
+        echo "::endgroup::"
+
+    - name: Install Python Requirements
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Install Python Requirements"
+        # install the plexhints library
+        python -m pip install -e .
+
+        # install requirements required for this action to complete
+        python -m pip install -r requirements-action.txt
+        echo "::endgroup::"
+
+    - name: Update Plex registry settings
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Update Plex registry settings"
+        # starting with pmps 1.32.2 servers must be claimed... disable that
+        # https://forums.plex.tv/t/new-claiming-requirement-for-windows/839096
+        REG ADD "HKCU\Software\Plex, Inc.\Plex Media Server" /v enableLocalSecurity /t REG_DWORD /d 0 /f
+        echo "::endgroup::"
+
+    - name: Install Plex Media Server
+      id: plex
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Install Plex Media Server"
+        if [[ "${{ inputs.use_docker }}" == "true" ]]; then
+          if [[ "${{ runner.os }}" != "Linux" ]]; then
+            echo "Docker install not supported on ${{ runner.os }}"
+            exit 1
+          else
+            app_data_path="/db/Library/Application Support/Plex Media Server"
+            plugin_path="${app_data_path}/Plug-ins"
+            plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
+          fi
+
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          app_data_path=$(cygpath.exe -u "${LOCALAPPDATA}/Plex Media Server")
+          plugin_path=$(cygpath.exe -u "${app_data_path}/Plug-ins")
+          plugin_log_path=$(cygpath.exe -u "${app_data_path}/Logs/PMS Plugin Logs")
+
+          choco install plexmediaserver
+
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          app_data_path="${HOME}/Library/Application Support/Plex Media Server"
+          plugin_path="${app_data_path}/Plug-ins"
+          plugin_log_path="${HOME}/Library/Logs/Plex Media Server/PMS Plugin Logs"
+
+          brew install --cask plex-media-server
+
+          # starting with pms 1.29.2 servers must be claimed... disable that
+          # https://forums.plex.tv/t/new-server-claiming-requirement-for-macos/816337
+          defaults write com.plexapp.plexmediaserver enableLocalSecurity -bool FALSE
+
+          # start plex
+          open "/Applications/Plex Media Server.app"
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          app_data_path="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
+          plugin_path="${app_data_path}/Plug-ins"
+          plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
+
+          curl https://downloads.plex.tv/plex-keys/PlexSign.key | sudo apt-key add -
+          echo deb https://downloads.plex.tv/repo/deb public main | \
+            sudo tee /etc/apt/sources.list.d/plexmediaserver.list
+          sudo apt-get update
+          sudo apt-get install plexmediaserver
+
+          # stop service
+          sudo systemctl stop plexmediaserver
+
+          # debug
+          cat /lib/systemd/system/plexmediaserver.service
+
+          # do not edit service directly, use override
+          override=/etc/systemd/system/plexmediaserver.service.d/override.conf
+          sudo mkdir -p $(dirname ${override})
+          sudo touch ${override}
+          echo "[Service]" | sudo tee ${override}
+          echo "User=$USER" | sudo tee -a ${override}
+
+          # take ownership
+          sudo chown -R $USER:$USER "${app_data_path}"
+        else
+          echo "Unknown OS: ${{ runner.os }}"
+          exit 1
+        fi
+
+        # copy plugins
+        # first plexhints
+        mkdir -p "${plugin_path}"
+        cp -r ./plexhints.bundle "${plugin_path}/"
+        # then additional plugins
+        for bundle in ${{ inputs.plugin_bunldes_to_install }}; do
+          cp -r "${bundle}" "${plugin_path}/"
+        done
+
+        # start/restart plex
+        if [[ "${{ inputs.use_docker }}" == "true" ]]; then
+          echo "using docker, no need to restart"
+
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          # restart plex
+          # first stop "Plex Media Server.exe"
+          taskkill //IM "Plex*" //F
+
+          # wait 5 seconds
+          sleep 5
+
+          # then start it again, cygpath converts windows path to unix path
+          plex_path=$(cygpath.exe -u "${PROGRAMFILES}/Plex/Plex Media Server/Plex Media Server.exe")
+          if [[ -f "${plex_path}" ]]; then
+            "${plex_path}" &
+          else
+            echo "${plex_path} not found"
+            exit 1
+          fi
+
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          # start plex
+          open "/Applications/Plex Media Server.app"
+
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          # reload daemon
+          sudo systemctl daemon-reload
+
+          # start
+          sudo systemctl start plexmediaserver
+        fi
+
+        # outputs
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          app_data_path=$(cygpath.exe -w "${app_data_path}")
+          plugin_path=$(cygpath.exe -w "${plugin_path}")
+          plugin_log_path=$(cygpath.exe -w "${plugin_log_path}")
+        fi
+        echo "app_data_path=${app_data_path}" >> $GITHUB_OUTPUT
+        echo "plugin_path=${plugin_path}" >> $GITHUB_OUTPUT
+        echo "plugin_log_path=${plugin_log_path}" >> $GITHUB_OUTPUT
+
+        echo "::endgroup::"
+
+    - name: Bootstrap Plex server
+      id: bootstrap
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Bootstrap Plex server"
+
+        # check inputs
+        if [[ "${{ inputs.use_docker }}" == "false" ]]; then
+          use_docker="--no-docker"
+        fi
+        if [[ "${{ inputs.without_movies }}" == "true" ]]; then
+          without_movies="--without-movies"
+        fi
+        if [[ "${{ inputs.without_movies_imdb }}" == "true" ]]; then
+          without_movies_imdb="--without-movies-imdb"
+        fi
+        if [[ "${{ inputs.without_movies_tmdb }}" == "true" ]]; then
+          without_movies_tmdb="--without-movies-tmdb"
+        fi
+        if [[ "${{ inputs.without_shows }}" == "true" ]]; then
+          without_shows="--without-shows"
+        fi
+        if [[ "${{ inputs.without_music }}" == "true" ]]; then
+          without_music="--without-music"
+        fi
+        if [[ "${{ inputs.without_photos }}" == "true" ]]; then
+          without_photos="--without-photos"
+        fi
+
+        python \
+          -u scripts/plex-bootstraptest.py \
+          --destination plex \
+          --advertise-ip 127.0.0.1 \
+          --bootstrap-timeout 540 \
+          --server-name plex-test-${{ runner.os }}-${{ github.run_id }} \
+          --show-token-plexhints \
+          ${use_docker} \
+          ${without_movies} \
+          ${without_movies_imdb} \
+          ${without_movies_tmdb} \
+          ${without_shows} \
+          ${without_music} \
+          ${without_photos} \
+          --unclaimed
+        echo "::endgroup::"
+
+    - name: Get token from file
+      id: token
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Get token from file"
+        if [[ -f .plex_token ]]; then
+          echo "plex_token=$(cat .plex_token)" >> $GITHUB_OUTPUT
+        else
+          echo ".plex_token not found"
+          exit 1
+        fi
+        echo "::endgroup::"
