@@ -111,7 +111,10 @@ pl = dict(
 # This is used to send plugin log statements directly to stout when running PMS from the command line. \
 # Rarely used anymore
 
-plist_string = plistlib.writePlistToString(pl).replace('&lt;', '<').replace('&gt;', '>')
+try:
+    plist_string = plistlib.writePlistToString(pl).replace('&lt;', '<').replace('&gt;', '>')
+except AttributeError:
+    plist_string = plistlib.dumps(pl).decode('utf-8').replace('&lt;', '<').replace('&gt;', '>').encode('utf-8')
 
 with open(info_file, 'wb') as fp:
     fp.write(plist_string)

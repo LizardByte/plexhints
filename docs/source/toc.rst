@@ -5,6 +5,7 @@
    about/overview
    about/installation
    about/usage
+   about/github_action
    about/changelog
 
 .. toctree::
@@ -17,7 +18,7 @@
 
 .. toctree::
    :maxdepth: 0
-   :caption: Plugin Code
+   :caption: CI Plugin Code
    :titlesonly:
 
    code_docs/main

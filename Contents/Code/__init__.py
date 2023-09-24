@@ -17,11 +17,11 @@ else:  # the code is running outside of Plex
     from plexhints.log_kit import Log  # log kit
 
 # local imports
-from constants import version
+from .constants import version
 
 
 def Start():
-    # type: () -> bool
+    # type: () -> True
     """
     Start the plug-in.
 
@@ -33,6 +33,11 @@ def Start():
 
     Preferences are validated, then additional threads are started for the web server, queue, plex listener, and
     scheduled tasks.
+
+    Returns
+    -------
+    True
+        Always returns ``True``.
 
     Examples
     --------

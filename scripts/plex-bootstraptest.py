@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-The script is used to bootstrap a the test environment for plexapi
+The script is used to bootstrap a test environment for plexapi
 with all the libraries required for testing.
 
-By default this uses a docker.
+By default, this uses a docker.
 
 It can be used manually using:
 python plex-bootraptest.py --no-docker --server-name name_of_server --account Hellowlol --password yourpassword
@@ -22,8 +22,14 @@ import shutil
 import socket
 import sys
 import time
-from plexapi.backports import glob
-from plexapi.backports import makedirs
+try:
+    from plexapi.backports import glob
+except ImportError:
+    from glob import glob
+try:
+    from plexapi.backports import makedirs
+except ImportError:
+    from os import makedirs
 from shutil import copyfile
 try:
     from shutil import which
@@ -38,8 +44,6 @@ from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 from plexapi.utils import SEARCHTYPES
 from tqdm import tqdm
-
-from plexhints.core_kit import PLEX_MEDIA_SERVER_PATH, PLUGIN_LOGS_PATH
 
 DOCKER_CMD = [
     "docker",
@@ -211,7 +215,7 @@ def setup_images(photos_path):
         makedirs(folder_path, exist_ok=True)
         photos_in_folder = len(glob(os.path.join(folder_path, "/*.jpg")))
         while photos_in_folder < required_cnt:
-            # Dunno why this is need got permission error on photo0.jpg
+            # Don't know why this is need got permission error on photo0.jpg
             photos_in_folder += 1
             full_path = os.path.join(folder_path, "photo%d.jpg" % photos_in_folder)
             copyfile(STUB_IMAGE_PATH, full_path)
@@ -488,7 +492,7 @@ if __name__ == "__main__":  # noqa: C901
         opts.plugin_bundle_destination = os.path.join(
             path, "db", "Library", "Application Support", "Plex Media Server", "Plug-ins", "plexhints.bundle") if \
             opts.no_docker is False else os.path.join(
-            PLEX_MEDIA_SERVER_PATH, "Plug-ins", "plexhints.bundle")
+            os.environ['PLEX_PLUGIN_PATH'], "Plug-ins", "plexhints.bundle")
 
     try:
         shutil.copytree(opts.plugin_bundle_source, opts.plugin_bundle_destination)
@@ -590,9 +594,9 @@ if __name__ == "__main__":  # noqa: C901
 
     sections = []
 
-    # Lets add a check here do somebody don't mess up
+    # Let's add a check here do somebody doesn't mess up
     # there normal server if they run manual tests.
-    # Like i did....
+    # Like I did....
     if len(server.library.sections()) and opts.no_docker is True:
         ans = input(
             "The server has %s sections, do you wish to remove it?\n> "
@@ -726,7 +730,7 @@ if __name__ == "__main__":  # noqa: C901
     if opts.show_token_plexhints:
         sys.path.append('Contents')
         from Code import constants
-        plugin_log_file = os.path.join(PLUGIN_LOGS_PATH, "{}.log".format(constants.plugin_identifier))
+        plugin_log_file = os.path.join(os.environ['PLEX_PLUGIN_LOG_PATH'], "{}.log".format(constants.plugin_identifier))
         print("plexhints plugin log file: {}".format(plugin_log_file))
 
         # wait up to 180 seconds

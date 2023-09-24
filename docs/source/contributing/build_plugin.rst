@@ -20,10 +20,10 @@ It is recommended to setup and activate a `venv`_.
 
 Install Requirements
 --------------------
-Install Requirements
+Install Plexhints
    .. code-block:: bash
 
-      python -m pip install --upgrade --target=./Contents/Libraries/Shared -r requirements.txt --no-warn-script-location
+      python -m pip install -e .
 
 Development Requirements
    .. code-block:: bash

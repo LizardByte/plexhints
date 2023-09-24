@@ -13,13 +13,9 @@ Features
 --------
 - Python library providing type hints to aid in the development of Plex plugins. Get rid of all those IDE warnings
   and errors!
-- CI Plugin providing a simple plugin that will allow you to collect the Plex Media Server token to be used in your CI
-  environment. This is useful for testing your plugin in a CI environment.
-- CI Action providing a GitHub Action that will install and bootstrap a Plex Media Server in a CI environment. This is
-  useful for testing your plugin in a CI environment.
-
-.. todo::
-   CI Plugin and CI Action are planned features, but are not yet implemented.
+- A GitHub Action that will install and bootstrap a Plex Media Server in a CI environment. The action can install
+  plugins and setup dummy libraries. Additionally the Plex token is provided as an output. This is useful for testing
+  your plugin or other Plex project in a CI environment.
 
 Integrations
 ------------

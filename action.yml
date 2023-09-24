@@ -1,58 +1,65 @@
 ---
 # This action sets up a Plex Media Server for testing.
 
-# example to get post step: https://github.com/actions/runner/issues/1478#issuecomment-1586075146
-
 name: "Plex Media Server Setup"
 description: "This action will install and prepare a Plex Media Server for testing."
 
 inputs:
-  plugin_bunldes_to_install:
+  plugin_bundles_to_install:
     description: >-
-      Space separated ist of plugin bundles to install. Provide the relative or absolute path to the bundle.
-    required: false
+      Space separated list of plugin bundles to install. Provide the relative or absolute path to the bundle.
     default: ""
+    required: false
   use_docker:
-    description: Whether to use docker to run the server.
-    required: false
+    description: Use Docker to run Plex Media Server. This is only supported on Linux.
     default: "false"
+    required: false
+  expose_plex_data_files_for_docker:
+    description: >-
+      When using docker, expose the Plex Media Server application data files to the remainder of your workflow at
+      ./plex.
+    default: "false"
+    required: false
   without_movies:
-    description: Whether to create a movies library (new agent).
-    required: false
+    description: Do not create a Movies library (new agent).
     default: "false"
+    required: false
   without_movies_imdb:
-    description: Whether to create a movies library (IMDB agent).
-    required: false
+    description: Do not create a Movies library (IMDB agent).
     default: "false"
+    required: false
   without_movies_tmdb:
-    description: Whether to create a movies library (TMDB agent).
-    required: false
+    description: Do not create a Movies library (TMDB agent).
     default: "false"
+    required: false
   without_shows:
-    description: Whether to create a TV shows library.
-    required: false
+    description: Do not create a TV Shows library.
     default: "false"
+    required: false
   without_music:
-    description: Whether to create a music library.
-    required: false
+    description: Do not create a Music library.
     default: "false"
+    required: false
   without_photos:
-    description: Whether to create a photos library.
-    required: false
+    description: Do not create a Photos library.
     default: "false"
+    required: false
 outputs:
-  plex_app_data_path:
-    description: "The path to the app data directory."
-    value: ${{ steps.plex.outputs.app_data_path }}
-  plex_plugin_log_path:
-    description: "The path to the plugin log directory."
-    value: ${{ steps.plex.outputs.plugin_log_path }}
-  plex_plugin_path:
-    description: "The path to the plugin directory."
-    value: ${{ steps.plex.outputs.plugin_path }}
-  plex_token:
-    description: "The Plex token for the server."
+  PLEXTOKEN:
+    description: The Plex Media Server authentication token.
     value: ${{ steps.token.outputs.plex_token }}
+  PLEX_APP_DATA_PATH:
+    description: The path to the Plex Media Server application data.
+    value: ${{ steps.plex.outputs.app_data_path }}
+  PLEX_PLUGIN_LOG_PATH:
+    description: The path to the Plex Media Server plugin logs.
+    value: ${{ steps.plex.outputs.plugin_log_path }}
+  PLEX_PLUGIN_PATH:
+    description: The path to the Plex Media Server plugins.
+    value: ${{ steps.plex.outputs.plugin_path }}
+  PLEX_SERVER_BASEURL:
+    description: The base URL of the Plex Media Server.
+    value: http://127.0.0.1:32400
 
 runs:
   using: "composite"
@@ -88,17 +95,6 @@ runs:
         python -m pip install -r requirements-action.txt
         echo "::endgroup::"
 
-    - name: Update Plex registry settings
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
-      working-directory: ${{ github.action_path }}
-      run: |
-        echo "::group::Update Plex registry settings"
-        # starting with pmps 1.32.2 servers must be claimed... disable that
-        # https://forums.plex.tv/t/new-claiming-requirement-for-windows/839096
-        REG ADD "HKCU\Software\Plex, Inc.\Plex Media Server" /v enableLocalSecurity /t REG_DWORD /d 0 /f
-        echo "::endgroup::"
-
     - name: Install Plex Media Server
       id: plex
       shell: bash
@@ -109,11 +105,17 @@ runs:
           if [[ "${{ runner.os }}" != "Linux" ]]; then
             echo "Docker install not supported on ${{ runner.os }}"
             exit 1
-          else
-            app_data_path="/db/Library/Application Support/Plex Media Server"
-            plugin_path="${app_data_path}/Plug-ins"
-            plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
           fi
+
+          if [[ "${{ inputs.expose_plex_data_files_for_docker }}" == "true" ]]; then
+            docker_prefix_path="${{ github.workspace }}/plex"
+          else
+            docker_prefix_path="${{ github.action_path }}/plex"
+          fi
+
+          app_data_path="${docker_prefix_path}/db/Library/Application Support/Plex Media Server"
+          plugin_path="${app_data_path}/Plug-ins"
+          plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
 
         elif [[ "${{ runner.os }}" == "Windows" ]]; then
           app_data_path=$(cygpath.exe -u "${LOCALAPPDATA}/Plex Media Server")
@@ -121,6 +123,10 @@ runs:
           plugin_log_path=$(cygpath.exe -u "${app_data_path}/Logs/PMS Plugin Logs")
 
           choco install plexmediaserver
+
+          # starting with pmps 1.32.2 servers must be claimed... disable that
+          # https://forums.plex.tv/t/new-claiming-requirement-for-windows/839096
+          REG ADD "HKCU\Software\Plex, Inc.\Plex Media Server" //v enableLocalSecurity //t REG_DWORD //d 0 //f
 
         elif [[ "${{ runner.os }}" == "macOS" ]]; then
           app_data_path="${HOME}/Library/Application Support/Plex Media Server"
@@ -136,6 +142,8 @@ runs:
           # start plex
           open "/Applications/Plex Media Server.app"
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          # default is in /var/lib
+          # app_data_path_base="${HOME}/plexmediaserver/Library/Application Support"
           app_data_path="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
           plugin_path="${app_data_path}/Plug-ins"
           plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
@@ -153,10 +161,19 @@ runs:
           cat /lib/systemd/system/plexmediaserver.service
 
           # do not edit service directly, use override
+          # example:
+          # [Service]
+          # Environment="TMPDIR=/path/to/new/tmp"
+          # Environment="PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=/home/myusername/Library/Application Support"
+          # User=myusername
+          # Group=mygroup
           override=/etc/systemd/system/plexmediaserver.service.d/override.conf
           sudo mkdir -p $(dirname ${override})
           sudo touch ${override}
           echo "[Service]" | sudo tee ${override}
+          # echo "Environment=TMPDIR=${HOME}/tmp" | sudo tee -a ${override}
+          # echo "Environment=PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=${app_data_path_base}" | sudo tee -a ${override}
+          echo "Environment=PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=12" | sudo tee -a ${override}
           echo "User=$USER" | sudo tee -a ${override}
 
           # take ownership
@@ -168,11 +185,26 @@ runs:
 
         # copy plugins
         # first plexhints
+        echo "creating ${plugin_path}"
         mkdir -p "${plugin_path}"
+        echo "copying ./plexhints.bundle to ${plugin_path}"
         cp -r ./plexhints.bundle "${plugin_path}/"
+        echo "plexhints plugin contents:"
+        ls -la "${plugin_path}/plexhints.bundle"
         # then additional plugins
-        for bundle in ${{ inputs.plugin_bunldes_to_install }}; do
-          cp -r "${bundle}" "${plugin_path}/"
+        for bundle in ${{ inputs.plugin_bundles_to_install }}; do
+          if [[ -d "${bundle}" ]]; then
+            echo "copying ${bundle} to ${plugin_path}"
+            cp -r "${bundle}" "${plugin_path}/"
+          elif [[ -d "${{ github.workspace }}/${bundle}" ]]; then
+            echo "copying ${{ github.workspace }}/${bundle} to ${plugin_path}"
+            cp -r "${{ github.workspace }}/${bundle}" "${plugin_path}/"
+          else
+            echo "${bundle} not found"
+            exit 1
+          fi
+          echo "plugin contents:"
+          ls -la "${plugin_path}/${bundle}"
         done
 
         # start/restart plex
@@ -221,6 +253,11 @@ runs:
         echo "::endgroup::"
 
     - name: Bootstrap Plex server
+      env:
+        PLEX_APP_DATA_PATH: ${{ steps.plex.outputs.app_data_path }}
+        PLEX_PLUGIN_LOG_PATH: ${{ steps.plex.outputs.plugin_log_path }}
+        PLEX_PLUGIN_PATH: ${{ steps.plex.outputs.plugin_path }}
+        PLEXAPI_PLEXAPI_TIMEOUT: "60"
       id: bootstrap
       shell: bash
       working-directory: ${{ github.action_path }}

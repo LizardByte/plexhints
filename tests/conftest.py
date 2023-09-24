@@ -10,7 +10,6 @@ import time
 import plexapi
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
-from plexhints.core_kit import PLUGIN_LOGS_PATH
 import pytest
 import requests
 
@@ -42,7 +41,7 @@ def _wait_for_file(f):
 @pytest.fixture(scope="session")
 def plugin_logs():
     # list contents of the plugin logs directory
-    plugin_logs = os.listdir(PLUGIN_LOGS_PATH)
+    plugin_logs = os.listdir(os.environ['PLEX_PLUGIN_LOG_PATH'])
 
     yield plugin_logs
 
@@ -51,7 +50,7 @@ def plugin_logs():
 @pytest.fixture(scope="session")
 def plugin_log_file():
     # the primary plugin log file
-    plugin_log_file = os.path.join(PLUGIN_LOGS_PATH, "{}.log".format(constants.plugin_identifier))
+    plugin_log_file = os.path.join(os.environ['PLEX_PLUGIN_LOG_PATH'], "{}.log".format(constants.plugin_identifier))
 
     # wait for the plugin log file to exist
     _wait_for_file(plugin_log_file)

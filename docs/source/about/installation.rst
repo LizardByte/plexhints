@@ -24,7 +24,3 @@ This library is available on PyPI as ``plexhints``. It can be installed in sever
 .. code-block:: bash
 
    python -m pip install https://github.com/lizardbyte/plexhints/archive/dist.zip#egg=plexhints
-
-CI Plugin
----------
-.. todo:: Add CI Plugin and instructions.

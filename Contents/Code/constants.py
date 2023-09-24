@@ -26,7 +26,7 @@ if plugin_directory.endswith('test.bundle'):
 info_file_path = os.path.join(plugin_directory, 'Contents', 'Info.plist')
 try:
     info_plist = plistlib.readPlist(pathOrFile=info_file_path)
-except IOError:
+except (AttributeError, IOError):
     info_plist = dict(
         CFBundleIdentifier='dev.lizardbyte.plexhints',
         PlexBundleVersion='0.0.0'
