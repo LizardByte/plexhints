@@ -480,6 +480,14 @@ if __name__ == "__main__":  # noqa: C901
         default=False,
         action="store_true",
     )  # noqa
+    parser.add_argument(
+        "--additional-server-queries-put",
+        help="Comma separated list of additional PUT requests to send to the server. The requests are sent before the "
+             "library sections are created. You can use this to enable third party metadata agents, as an example. "
+             "e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`",
+        default=[],
+        nargs='*',
+    )  # noqa
     opts, _ = parser.parse_known_args()
 
     account = get_plex_account(opts)
@@ -706,6 +714,15 @@ if __name__ == "__main__":  # noqa: C901
                 expected_media_count=has_photos,
             )
         )
+
+    # send additional server queries
+    if opts.additional_server_queries_put:
+        print("Sending additional PUT requests to the server")
+        print("Additional PUT requests: {}".format(opts.additional_server_queries_put))
+        for query in opts.additional_server_queries_put:
+            query = query.strip()
+            print("Sending PUT request to {}".format(query))
+            server.query(key=query, method=server._session.put)
 
     # Create the Plex library in our instance
     if sections:

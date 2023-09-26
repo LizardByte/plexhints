@@ -44,6 +44,13 @@ inputs:
     description: Do not create a Photos library.
     default: "false"
     required: false
+  additional_server_queries_put:
+    description: >-
+      Space separated list of additional PUT requests to send to the server. The requests are sent before the
+      library sections are created. You can use this to enable third party metadata agents, as an example.
+      e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
+    default: ""
+    required: false
 outputs:
   PLEXTOKEN:
     description: The Plex Media Server authentication token.
@@ -173,7 +180,7 @@ runs:
           echo "[Service]" | sudo tee ${override}
           # echo "Environment=TMPDIR=${HOME}/tmp" | sudo tee -a ${override}
           # echo "Environment=PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=${app_data_path_base}" | sudo tee -a ${override}
-          echo "Environment=PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=12" | sudo tee -a ${override}
+          # echo "Environment=PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=12" | sudo tee -a ${override}
           echo "User=$USER" | sudo tee -a ${override}
 
           # take ownership
@@ -287,6 +294,12 @@ runs:
           without_photos="--without-photos"
         fi
 
+        # additional server queries
+        if [[ -n "${{ inputs.additional_server_queries_put }}" ]]; then
+          echo "additional_server_queries_put: ${{ inputs.additional_server_queries_put }}"
+          server_queries_put="--additional-server-queries-put ${{ inputs.additional_server_queries_put }}"
+        fi
+
         python \
           -u scripts/plex-bootstraptest.py \
           --destination plex \
@@ -301,6 +314,7 @@ runs:
           ${without_shows} \
           ${without_music} \
           ${without_photos} \
+          ${server_queries_put} \
           --unclaimed
         echo "::endgroup::"
 
