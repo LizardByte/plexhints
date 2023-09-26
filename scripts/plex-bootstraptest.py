@@ -380,28 +380,15 @@ if __name__ == "__main__":  # noqa: C901
     )
     # Test environment arguments
     parser.add_argument(
-        "--no-docker", help="Use docker", default=False, action="store_true"
-    )
-    parser.add_argument(
-        "--timezone", help="Timezone to set inside plex", default="UTC"
+        "--accept-eula", help="Accept Plex's EULA", default=False, action="store_true"
     )  # noqa
     parser.add_argument(
-        "--language", help="Language to set inside plex", default="en_US.UTF-8"
-    )  # noqa
-    parser.add_argument(
-        "--destination",
-        help="Local path where to store all the media",
-        default=os.path.join(os.getcwd(), "plex"),
-    )  # noqa
-    parser.add_argument(
-        "--plugin-bundle-destination",
-        help="Local path where to copy the plugin bundle to",
-        default="auto"
-    )  # noqa
-    parser.add_argument(
-        "--plugin-bundle-source",
-        help="Local path where bundle is located",
-        default=os.path.join(os.getcwd(), "plexhints.bundle"),
+        "--additional-server-queries-put",
+        help="Comma separated list of additional PUT requests to send to the server. The requests are sent before the "
+             "library sections are created. You can use this to enable third party metadata agents, as an example. "
+             "e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`",
+        default=[],
+        nargs='*',
     )  # noqa
     parser.add_argument(
         "--advertise-ip",
@@ -410,13 +397,24 @@ if __name__ == "__main__":  # noqa: C901
         default=default_ip,
     )  # noqa
     parser.add_argument(
-        "--docker-tag", help="Docker image tag to install", default="latest"
-    )  # noqa
-    parser.add_argument(
         "--bootstrap-timeout",
         help="Timeout for each step of bootstrap, in seconds (default: %(default)s)",
         default=180,
         type=int,
+    )  # noqa
+    parser.add_argument(
+        "--destination",
+        help="Local path where to store all the media",
+        default=os.path.join(os.getcwd(), "plex"),
+    )  # noqa
+    parser.add_argument(
+        "--docker-tag", help="Docker image tag to install", default="latest"
+    )  # noqa
+    parser.add_argument(
+        "--no-docker", help="Use docker", default=False, action="store_true"
+    )
+    parser.add_argument(
+        "--language", help="Language to set inside Plex", default="en_US.UTF-8"
     )  # noqa
     parser.add_argument(
         "--server-name",
@@ -424,7 +422,19 @@ if __name__ == "__main__":  # noqa: C901
         default="plex-test-docker-%s" % str(uuid4()),
     )  # noqa
     parser.add_argument(
-        "--accept-eula", help="Accept Plex's EULA", default=False, action="store_true"
+        "--show-token",
+        help="Display access token after bootstrap",
+        default=False,
+        action="store_true",
+    )  # noqa
+    parser.add_argument(
+        "--show-token-plexhints",
+        help="Try to find the access token after bootstrap. Requires the plexhinsts.bundle to be installed.",
+        default=False,
+        action="store_true",
+    )  # noqa
+    parser.add_argument(
+        "--timezone", help="Timezone to set inside Plex", default="UTC"
     )  # noqa
     parser.add_argument(
         "--without-movies",
@@ -448,13 +458,6 @@ if __name__ == "__main__":  # noqa: C901
         action="store_false",
     )  # noqa
     parser.add_argument(
-        "--without-shows",
-        help="Do not create TV Shows section",
-        default=True,
-        dest="with_shows",
-        action="store_false",
-    )  # noqa
-    parser.add_argument(
         "--without-music",
         help="Do not create Music section",
         default=True,
@@ -469,24 +472,11 @@ if __name__ == "__main__":  # noqa: C901
         action="store_false",
     )  # noqa
     parser.add_argument(
-        "--show-token",
-        help="Display access token after bootstrap",
-        default=False,
-        action="store_true",
-    )  # noqa
-    parser.add_argument(
-        "--show-token-plexhints",
-        help="Try to find the access token after bootstrap. Requires the plexhinsts.bundle to be installed.",
-        default=False,
-        action="store_true",
-    )  # noqa
-    parser.add_argument(
-        "--additional-server-queries-put",
-        help="Comma separated list of additional PUT requests to send to the server. The requests are sent before the "
-             "library sections are created. You can use this to enable third party metadata agents, as an example. "
-             "e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`",
-        default=[],
-        nargs='*',
+        "--without-shows",
+        help="Do not create TV Shows section",
+        default=True,
+        dest="with_shows",
+        action="store_false",
     )  # noqa
     opts, _ = parser.parse_known_args()
 
@@ -494,38 +484,6 @@ if __name__ == "__main__":  # noqa: C901
     path = os.path.realpath(os.path.expanduser(opts.destination))
     media_path = os.path.join(path, "media")
     makedirs(media_path, exist_ok=True)
-
-    # copy the plugin
-    if opts.plugin_bundle_destination == "auto":
-        opts.plugin_bundle_destination = os.path.join(
-            path, "db", "Library", "Application Support", "Plex Media Server", "Plug-ins", "plexhints.bundle") if \
-            opts.no_docker is False else os.path.join(
-            os.environ['PLEX_PLUGIN_PATH'], "Plug-ins", "plexhints.bundle")
-
-    try:
-        shutil.copytree(opts.plugin_bundle_source, opts.plugin_bundle_destination)
-    except OSError as e:
-        if 'file exists' in str(e).lower() or 'file already exists' in str(e).lower():
-            print("Warning: Skipping copy, plugin already exists at %s" % opts.plugin_bundle_destination)
-        else:
-            print("Error: %s" % e)
-            raise SystemExit("Error copying plugin bundle to %s" % opts.plugin_bundle_destination)
-    else:
-        print("Copied plugin bundle to %s" % opts.plugin_bundle_destination)
-
-    # copy the plugin plist file back to Contents
-    # this is necessary to get elevated policy with plexhints
-    try:
-        shutil.copyfile(os.path.join(opts.plugin_bundle_source, "Contents", "Info.plist"),
-                        os.path.join(os.getcwd(), "Contents", "Info.plist"))
-    except OSError as e:
-        if 'file exists' in str(e).lower():
-            print("Warning: Skipping copy, plugin plist already exists at %s" % os.path.join(
-                os.getcwd(), "Contents", "Info.plist"))
-        else:
-            print("Warning: %s" % e)
-    else:
-        print("Copied plugin plist to %s" % os.path.join(os.getcwd(), "Contents", "Info.plist"))
 
     # Download the Plex Docker image
     if opts.no_docker is False:

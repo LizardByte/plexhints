@@ -5,19 +5,46 @@ name: "Plex Media Server Setup"
 description: "This action will install and prepare a Plex Media Server for testing."
 
 inputs:
-  plugin_bundles_to_install:
+  accept_eula:
+    description: Accept Plex's EULA.
+    default: "false"
+    required: false
+  additional_server_queries_put:
     description: >-
-      Space separated list of plugin bundles to install. Provide the relative or absolute path to the bundle.
+      Space separated list of additional PUT requests to send to the server. The requests are sent before the
+      library sections are created. You can use this to enable third party metadata agents, as an example.
+      e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
     default: ""
     required: false
-  use_docker:
-    description: Use Docker to run Plex Media Server. This is only supported on Linux.
-    default: "false"
+  bootstrap_timeout:
+    description: Timeout for each step of bootstrap, in seconds.
+    default: "540"
+    required: false
+  docker_tag:
+    description: Docker image to to install. Only used when `use_docker` is `true`.
+    default: "latest"
     required: false
   expose_plex_data_files_for_docker:
     description: >-
       When using docker, expose the Plex Media Server application data files to the remainder of your workflow at
       ./plex.
+    default: "false"
+    required: false
+  language:
+    description: Language to set inside Plex. Only used when `use_docker` is `false`.
+    default: "en-US.UTF-8"
+    required: false
+  plugin_bundles_to_install:
+    description: >-
+      Space separated list of plugin bundles to install. Provide the relative or absolute path to the bundle.
+    default: ""
+    required: false
+  timezone:
+    description: Timezone to set inside Plex. Only used when `use_docker` is `false`.
+    default: "UTC"
+    required: false
+  use_docker:
+    description: Use Docker to run Plex Media Server. This is only supported on Linux.
     default: "false"
     required: false
   without_movies:
@@ -32,10 +59,6 @@ inputs:
     description: Do not create a Movies library (TMDB agent).
     default: "false"
     required: false
-  without_shows:
-    description: Do not create a TV Shows library.
-    default: "false"
-    required: false
   without_music:
     description: Do not create a Music library.
     default: "false"
@@ -44,12 +67,9 @@ inputs:
     description: Do not create a Photos library.
     default: "false"
     required: false
-  additional_server_queries_put:
-    description: >-
-      Space separated list of additional PUT requests to send to the server. The requests are sent before the
-      library sections are created. You can use this to enable third party metadata agents, as an example.
-      e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
-    default: ""
+  without_shows:
+    description: Do not create a TV Shows library.
+    default: "false"
     required: false
 outputs:
   PLEXTOKEN:
@@ -272,8 +292,25 @@ runs:
         echo "::group::Bootstrap Plex server"
 
         # check inputs
+        if [[ "${{ inputs.accept_eula }}" == "true" ]]; then
+          accept_eula="--accept-eula"
+        fi
+        if [[ -n "${{ inputs.additional_server_queries_put }}" ]]; then
+          echo "additional_server_queries_put: ${{ inputs.additional_server_queries_put }}"
+          server_queries_put="--additional-server-queries-put ${{ inputs.additional_server_queries_put }}"
+        fi
         if [[ "${{ inputs.use_docker }}" == "false" ]]; then
           use_docker="--no-docker"
+        else
+          if [[ -n "${{ inputs.docker_tag }}" ]]; then
+            docker_tag="--docker-tag ${{ inputs.docker_tag }}"
+          fi
+        fi
+        if [[ -n "${{ inputs.language }}" ]]; then
+          language="--language ${{ inputs.language }}"
+        fi
+        if [[ -n "${{ inputs.timezone }}" ]]; then
+          timezone="--timezone ${{ inputs.timezone }}"
         fi
         if [[ "${{ inputs.without_movies }}" == "true" ]]; then
           without_movies="--without-movies"
@@ -284,37 +321,35 @@ runs:
         if [[ "${{ inputs.without_movies_tmdb }}" == "true" ]]; then
           without_movies_tmdb="--without-movies-tmdb"
         fi
-        if [[ "${{ inputs.without_shows }}" == "true" ]]; then
-          without_shows="--without-shows"
-        fi
         if [[ "${{ inputs.without_music }}" == "true" ]]; then
           without_music="--without-music"
         fi
         if [[ "${{ inputs.without_photos }}" == "true" ]]; then
           without_photos="--without-photos"
         fi
-
-        # additional server queries
-        if [[ -n "${{ inputs.additional_server_queries_put }}" ]]; then
-          echo "additional_server_queries_put: ${{ inputs.additional_server_queries_put }}"
-          server_queries_put="--additional-server-queries-put ${{ inputs.additional_server_queries_put }}"
+        if [[ "${{ inputs.without_shows }}" == "true" ]]; then
+          without_shows="--without-shows"
         fi
 
         python \
           -u scripts/plex-bootstraptest.py \
           --destination plex \
           --advertise-ip 127.0.0.1 \
-          --bootstrap-timeout 540 \
+          --bootstrap-timeout ${{ inputs.bootstrap_timeout }} \
           --server-name plex-test-${{ runner.os }}-${{ github.run_id }} \
           --show-token-plexhints \
+          ${accept_eula} \
+          ${server_queries_put} \
+          ${docker_tag} \
+          ${language} \
+          ${timezone} \
           ${use_docker} \
           ${without_movies} \
           ${without_movies_imdb} \
           ${without_movies_tmdb} \
-          ${without_shows} \
           ${without_music} \
           ${without_photos} \
-          ${server_queries_put} \
+          ${without_shows} \
           --unclaimed
         echo "::endgroup::"
 
