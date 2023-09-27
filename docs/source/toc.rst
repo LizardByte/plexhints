@@ -10,6 +10,12 @@
 
 .. toctree::
    :maxdepth: 2
+   :caption: Plex Plug-in Framework docs
+
+   framework/index
+
+.. toctree::
+   :maxdepth: 2
    :caption: Contributing
 
    contributing/contributing

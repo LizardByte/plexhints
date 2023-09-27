@@ -169,8 +169,6 @@ runs:
           # start plex
           open "/Applications/Plex Media Server.app"
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
-          # default is in /var/lib
-          # app_data_path_base="${HOME}/plexmediaserver/Library/Application Support"
           app_data_path="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
           plugin_path="${app_data_path}/Plug-ins"
           plugin_log_path="${app_data_path}/Logs/PMS Plugin Logs"
@@ -198,8 +196,6 @@ runs:
           sudo mkdir -p $(dirname ${override})
           sudo touch ${override}
           echo "[Service]" | sudo tee ${override}
-          # echo "Environment=TMPDIR=${HOME}/tmp" | sudo tee -a ${override}
-          # echo "Environment=PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=${app_data_path_base}" | sudo tee -a ${override}
           # echo "Environment=PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=12" | sudo tee -a ${override}
           echo "User=$USER" | sudo tee -a ${override}
 

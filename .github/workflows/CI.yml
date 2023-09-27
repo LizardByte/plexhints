@@ -105,7 +105,7 @@ jobs:
           flags: ${{ runner.os }},Python-${{ matrix.python }}
 
   build:
-    needs: [check_changelog, pytest]
+    needs: [check_changelog]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -167,8 +167,6 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          skip-existing: true  # skip existing due to how we are triggering the workflow
 
       - name: Create/Update GitHub Release
         uses: ncipollo/release-action@v1
