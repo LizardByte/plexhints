@@ -46,7 +46,7 @@ def check_size(data, max_size=5242880):
     Exception
         `Exception` in this library, `Framework.exceptions.APIException` in Plex Framework`
     """
-    if len(data) > max_size and max_size is not None:
+    if max_size is not None and len(data) > max_size:
         raise Exception("Data of size %d is greater than the maximum size %d" % (len(data), max_size))
 
 
@@ -501,7 +501,11 @@ class _PlistKit:
             An object representing the Plist.
         """
         check_size(data=string, max_size=max_size)
-        return plistlib.readPlistFromString(string)
+        try:
+            return plistlib.readPlistFromString(string)
+        except AttributeError:
+            # python 3.x
+            return plistlib.loads(string.encode('utf-8'))
 
     def ObjectFromURL(self, url, values=None, headers={}, cacheTime=None, encoding=None, errors=None,
                       timeout=GLOBAL_DEFAULT_TIMEOUT, sleep=0, follow_redirects=True, method=None, max_size=None):

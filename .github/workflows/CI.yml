@@ -1,0 +1,178 @@
+---
+name: CI
+
+on:
+  pull_request:
+    branches: [master, nightly]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check_changelog:
+    name: Check Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Changelog
+        id: verify_changelog
+        if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
+        # base_ref for pull request check, ref for push
+        uses: LizardByte/.github/actions/verify_changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      next_version: ${{ steps.verify_changelog.outputs.changelog_parser_version }}
+      last_version: ${{ steps.verify_changelog.outputs.latest_release_tag_name }}
+      release_body: ${{ steps.verify_changelog.outputs.changelog_parser_description }}
+
+  pytest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python: ["2.7", "3.8", "3.9", "3.10", "3.11"]
+        docker: [false]
+        include:
+          - os: ubuntu-latest
+            python: "3.8"
+            docker: true
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 2.7
+        if: matrix.python == '2.7'
+        uses: LizardByte/.github/actions/setup_python2@nightly
+
+      - name: Set up Python 3.x (${{ matrix.python }})
+        if: matrix.python != '2.7'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install python dependencies
+        shell: bash
+        run: |
+          python -m pip --no-python-version-warning --disable-pip-version-check install --upgrade \
+            pip setuptools wheel
+
+          # install requirements
+          python -m pip install --upgrade -r requirements-dev.txt
+
+      - name: Bootstrap Plex server
+        id: bootstrap
+        uses: ./
+        with:
+          use_docker: ${{ matrix.docker }}
+          expose_plex_data_files_for_docker: ${{ matrix.docker }}
+
+      - name: Test with pytest
+        env:
+          PLEXAPI_AUTH_SERVER_BASEURL: ${{ steps.bootstrap.outputs.PLEX_SERVER_BASEURL }}
+          PLEXTOKEN: ${{ steps.bootstrap.outputs.PLEXTOKEN }}
+          PLEX_APP_DATA_PATH: ${{ steps.bootstrap.outputs.PLEX_APP_DATA_PATH }}
+          PLEX_PLUGIN_LOG_PATH: ${{ steps.bootstrap.outputs.PLEX_PLUGIN_LOG_PATH }}
+          PLEX_PLUGIN_PATH: ${{ steps.bootstrap.outputs.PLEX_PLUGIN_PATH }}
+        id: test
+        shell: bash
+        run: |
+          python -m pytest \
+            -rxXs \
+            --tb=native \
+            --verbose \
+            --cov=Contents/Code \
+            --cov=plexhints \
+            tests
+
+      - name: Upload coverage
+        # any except cancelled or skipped
+        if: >-
+          always() &&
+          (steps.test.outcome == 'success' || steps.test.outcome == 'failure') &&
+          (matrix.docker == false)
+        uses: codecov/codecov-action@v3
+        with:
+          flags: ${{ runner.os }},Python-${{ matrix.python }}
+
+  build:
+    needs: [check_changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 2.7
+        uses: LizardByte/.github/actions/setup_python2@nightly
+
+      - name: Set up Python 2.7 Dependencies
+        run: |
+          echo "Installing Requirements"
+          python --version
+          python -m pip --no-python-version-warning --disable-pip-version-check install --upgrade \
+            pip setuptools twine wheel
+
+          # install python requirements
+          python -m pip install -e .
+          python -m pip install --upgrade -r requirements-dev.txt
+
+      - name: build
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+        run: |
+          python setup.py sdist bdist_wheel
+
+      - name: Verify README
+        # https://packaging.python.org/guides/making-a-pypi-friendly-readme/#validating-restructuredtext-markup
+        run: |
+          python -m twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          if-no-files-found: error  # 'warn' or 'ignore' are also available, defaults to `warn`
+          path: dist
+
+  publish:
+    name: Publish
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_dispatch')
+    needs:
+      - check_changelog
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: publish
+      url: https://pypi.org/p/plexhints
+    permissions:
+      id-token: write
+    steps:
+      - name: Download dist artifacts
+        # this will be published to PyPI
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create/Update GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ needs.check_changelog.outputs.next_version }}
+          tag: ${{ needs.check_changelog.outputs.next_version }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
+          allowUpdates: true
+          body: ${{ needs.check_changelog.outputs.release_body }}

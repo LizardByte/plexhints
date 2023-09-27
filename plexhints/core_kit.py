@@ -31,16 +31,16 @@ _PLUGIN_LOGS_PATH = dict(
     Linux="{}/Logs/PMS Plugin Logs".format(_PLEX_MEDIA_SERVER_PATH['Linux']),
     Windows="{}\\Logs\\PMS Plugin Logs".format(_PLEX_MEDIA_SERVER_PATH['Windows']),
 )
-PLATFORM = platform.system()
-APP_DATA_PATH = _APP_DATA_PATH[PLATFORM]
-PLEX_MEDIA_SERVER_PATH = _PLEX_MEDIA_SERVER_PATH[PLATFORM]
-PLUGIN_LOGS_PATH = _PLUGIN_LOGS_PATH[PLATFORM]
+_PLATFORM = platform.system()
+_APP_DATA_PATH = _APP_DATA_PATH[_PLATFORM]
+_PLEX_MEDIA_SERVER_PATH = _PLEX_MEDIA_SERVER_PATH[_PLATFORM]
+_PLUGIN_LOGS_PATH = _PLUGIN_LOGS_PATH[_PLATFORM]
 
 
 class _CoreKit:
     def __init__(self):
         self.storage = self.Storage()
-        self.app_support_path = os.path.join(APP_DATA_PATH, 'Plex Media Server')
+        self.app_support_path = os.path.join(os.getenv('PLEX_APP_DATA_PATH', _PLEX_MEDIA_SERVER_PATH))
         self.bundle_path = os.path.join(self.app_support_path, 'Plug-ins', 'test.bundle')
         self.bundled_plugins_path = os.path.join(self.app_support_path, 'Plug-ins')
         self.plugin_support_path = os.path.join(self.app_support_path, 'Plug-in Support')
