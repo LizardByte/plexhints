@@ -100,7 +100,7 @@ def external_path(itemName):
         return
 
 
-@deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
+@deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
             details="Resource.SharedExternalPath() (and the 'S' alias) are deprecated. \
             All resource path generation can now be done via Resource.ExternalPath() (and the 'R' alias). \
             Please update your code.")

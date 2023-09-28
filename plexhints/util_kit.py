@@ -9,6 +9,7 @@ from operator import attrgetter, itemgetter
 import os
 import random
 import re
+import six
 import string
 import sys
 import textwrap
@@ -137,12 +138,28 @@ def _regex_rules(rules=_plural_rules):
 
 def _safe_encode(s):
     # type: (str) -> str
-    return base64.b64encode(s).replace('/', '@').replace('+', '*').replace('=', '_')
+    # Ensure input is in bytes format for encoding
+    if isinstance(s, str):
+        s = s.encode('utf-8')
+
+    encoded_bytes = base64.b64encode(s)
+
+    # If Python 3, decode the bytes to string; then make replacements
+    encoded_str = encoded_bytes.decode('utf-8') if isinstance(encoded_bytes, bytes) else encoded_bytes
+
+    return encoded_str.replace('/', '@').replace('+', '*').replace('=', '_')
 
 
 def _safe_decode(s):
     # type: (str) -> str
-    return base64.b64decode(s.replace('@', '/').replace('*', '+').replace('_', '=') + '=' * (4 - len(s) % 4))
+    if not isinstance(s, six.text_type):
+        s = s.decode('utf-8')
+
+    decoded_bytes = base64.b64decode(s.replace('@', '/').replace('*', '+').replace('_', '=') + '=' * (4 - len(s) % 4))
+
+    if six.PY3:
+        return str(decoded_bytes.decode('utf-8'))
+    return decoded_bytes
 
 
 def _url_encode(s):
@@ -174,7 +191,8 @@ class _StringKit:
         self.UPPERCASE = string.ascii_uppercase
         self.DIGITS = string.digits
         self.HEX_DIGITS = string.hexdigits
-        self.LETTERS = string.letters
+        # string.letters not available in python 3
+        self.LETTERS = '{}{}'.format(string.ascii_lowercase, string.ascii_uppercase)
         self.OCT_DIGITS = string.octdigits
         self.PUNCTUATION = string.punctuation
         self.PRINTABLE = string.printable
@@ -200,17 +218,33 @@ class _StringKit:
         """
         Encodes the given string using Base64 encoding.
         """
+        # Convert string to bytes for encoding
+        if isinstance(s, str):
+            s = s.encode('utf-8')
+
         if with_newlines:
-            return base64.encodestring(s=s)
+            # Check for Python version and use the appropriate method
+            encoded_bytes = base64.encodebytes(s) if hasattr(base64, "encodebytes") else base64.encodestring(s)
         else:
-            return base64.b64encode(s=s)
+            encoded_bytes = base64.b64encode(s)
+
+        # Convert encoded bytes back to string
+        return str(encoded_bytes.decode('utf-8'))
 
     def Base64Decode(self, s):
         # type: (str) -> str
         """
         Decodes the given Base64-encoded string.
         """
-        return base64.decodestring(s=s)
+        # Convert string to bytes for decoding
+        if isinstance(s, str):
+            s = s.encode('utf-8')
+
+        # Check for Python version and use the appropriate method
+        decoded_bytes = base64.decodebytes(s) if hasattr(base64, "decodebytes") else base64.decodestring(s)
+
+        # Convert decoded bytes back to string
+        return str(decoded_bytes.decode('utf-8'))
 
     def Quote(self, s, usePlus=False):
         # type: (str, bool) -> str
@@ -219,9 +253,9 @@ class _StringKit:
         are never quoted. If *usePlus* is ``True``, spaces are escaped as a plus character instead of ``%20``.
         """
         if usePlus:
-            return quote_plus(s=s)
+            return quote_plus(s)
         else:
-            return quote(s=s)
+            return quote(s)
 
     def URLEncode(self, s):
         # type: (str) -> str
@@ -240,7 +274,10 @@ class _StringKit:
 
     def Join(self, words, sep=None):
         # type: (Iterable[AnyStr], AnyStr) -> AnyStr
-        return string.join(words, sep)
+        try:  # python 2
+            return string.join(words, sep)
+        except AttributeError:  # python 3
+            return sep.join(words)
 
     def JoinURL(self, base, url, allow_fragments=True):
         # type: (AnyStr, AnyStr, bool) -> AnyStr
@@ -258,8 +295,8 @@ class _StringKit:
         """
         Converts HTML entities into regular characters (e.g. "&amp;"" => "&")
         """
-        soup = BeautifulSoup(s, convertEntities=BeautifulSoup.HTML_ENTITIES)
-        return unicode(soup)
+        soup = BeautifulSoup(s, "html.parser")
+        return str(soup.get_text())
 
     def UUID(self):
         """
@@ -276,7 +313,7 @@ class _StringKit:
 
         u = temp.replace(u"\u00df", u"ss").replace(u"\u1e9e", u"SS")
         nkfd_form = unicodedata.normalize('NFKD', u)
-        only_ascii = nkfd_form.encode('ASCII', 'ignore')
+        only_ascii = str(nkfd_form.encode('ASCII', 'ignore').decode())
         return only_ascii
 
     def Pluralize(self, s):

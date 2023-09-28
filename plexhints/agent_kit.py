@@ -88,7 +88,7 @@ class _Media(object):
 
     class Movie(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.Movie, self).__init__(**kwargs)
             self._model_name = 'Movie'
             self._type_id = 1
             self._attrs = dict()  # removed in favor of defining values below
@@ -104,7 +104,7 @@ class _Media(object):
 
     class TV_Show(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.TV_Show, self).__init__(**kwargs)
             self._model_name = 'TV_Show'
             self._type_id = 2
             self._attrs = dict()  # removed in favor of defining values below
@@ -121,7 +121,7 @@ class _Media(object):
 
     class Album(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.Album, self).__init__(**kwargs)
             self._model_name = 'LegacyAlbum'
             self._media_type_name = 'Album'
             self._parent_model_name = 'Artist'
@@ -140,7 +140,7 @@ class _Media(object):
 
     class Artist(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.Artist, self).__init__(**kwargs)
             self._model_name = 'LegacyArtist'
             self._versioned_model_names = {
                 2: 'ModernArtist'
@@ -158,7 +158,7 @@ class _Media(object):
 
     class PhotoAlbum(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.PhotoAlbum, self).__init__(**kwargs)
             self._model_name = 'PhotoAlbum'
             self._type_id = 12
             self._attrs = dict()
@@ -166,7 +166,7 @@ class _Media(object):
 
     class Photo(MediaObject):
         def __init__(self, **kwargs):
-            super(MediaObject, self).__init__(**kwargs)
+            super(_Media.Photo, self).__init__(**kwargs)
             self._model_name = 'Photo'
             self._type_id = 13
             self._attrs = dict()

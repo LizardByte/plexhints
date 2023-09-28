@@ -39,11 +39,21 @@ _PLUGIN_LOGS_PATH = _PLUGIN_LOGS_PATH[_PLATFORM]
 
 class _CoreKit:
     def __init__(self):
+        self.data = self.Data()
         self.storage = self.Storage()
         self.app_support_path = os.path.join(os.getenv('PLEX_APP_DATA_PATH', _PLEX_MEDIA_SERVER_PATH))
         self.bundle_path = os.path.join(self.app_support_path, 'Plug-ins', 'test.bundle')
         self.bundled_plugins_path = os.path.join(self.app_support_path, 'Plug-ins')
         self.plugin_support_path = os.path.join(self.app_support_path, 'Plug-in Support')
+
+    class Data:
+        def __init__(self):
+            # todo - implement these components (see data.py)
+            self.json = None
+            self.xml = None
+            self.pickle = None
+            self.archiving = None
+            self.hashing = None
 
     class Storage:
         def __init__(self):
@@ -106,7 +116,7 @@ class _CoreKit:
                 else:
                     mode = 'w'
                 f = open(temp_file, mode)
-                f.write(str(data))
+                f.write(data if binary else str(data))
                 f.close()
                 if os.path.exists(filename):
                     os.remove(filename)

@@ -1,0 +1,43 @@
+---
+# Sample YAML for testing
+
+info:
+  name: "John Doe"
+  age: 30
+  email: "john.doe@example.com"
+
+address:
+  street: "1234 Elm Street"
+  city: "Anytown"
+  state: "CA"
+  postal_code: "12345"
+
+languages:
+  - "English"
+  - "Spanish"
+  - "French"
+
+skills:
+  programming:
+    - "Python"
+    - "Java"
+    - "JavaScript"
+  databases:
+    - "MySQL"
+    - "PostgreSQL"
+  tools:
+    - "Git"
+    - "Docker"
+
+projects:
+  - name: "Website Design"
+    description: "Redesigned the company website for mobile optimization."
+    year: 2022
+  - name: "Database Migration"
+    description: "Migrated company data from MySQL to PostgreSQL."
+    year: 2021
+
+preferences:
+  dark_mode: true
+  notifications: false
+  timezone: "UTC+3"

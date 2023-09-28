@@ -97,7 +97,7 @@ jobs:
           (matrix.docker == false)
         uses: codecov/codecov-action@v3
         with:
-          flags: ${{ runner.os }},Python-${{ matrix.python }}
+          flags: Python-${{ matrix.python }}-${{ runner.os }}
 
   build:
     needs: [check_changelog]

@@ -3,8 +3,18 @@
 from functools import partial
 import os
 import re
+import shutil
 import sys
 import time
+from threading import Thread
+
+# conditional imports
+try:
+    from http.server import SimpleHTTPRequestHandler
+    import socketserver
+except ImportError:  # Python 2
+    from BaseHTTPServer import SimpleHTTPRequestHandler
+    import SocketServer as socketserver
 
 # lib imports
 import plexapi
@@ -13,17 +23,24 @@ from plexapi.server import PlexServer
 import pytest
 import requests
 
+# local imports
+import plexhints
+
 # add Contents directory to the system path
 if os.path.isdir('Contents'):
     sys.path.append('Contents')
 
-    # local imports
+    # plex plugin imports
     from Code import constants
 else:
     raise Exception('Contents directory not found')
 
 # plex server setup
 SERVER_BASEURL = plexapi.CONFIG.get("auth.server_baseurl")
+
+# data directory setup
+DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), 'data')
+TEMP_DIRECTORY = os.path.join(os.getcwd(), 'plexhints-tests-temp')
 
 
 def _wait_for_file(f):
@@ -37,7 +54,19 @@ def _wait_for_file(f):
     assert attempts < max_attempts, "File not found after {}s".format(attempts)
 
 
-# plex server fixtures
+@pytest.fixture(scope="function")
+def elevated_policy():
+    plexhints.ELEVATED_POLICY = True
+    yield
+
+
+@pytest.fixture(scope="function")
+def non_elevated_policy():
+    plexhints.ELEVATED_POLICY = False
+    yield
+
+
+# plex server fixtures... test plexhints.bundle CI plugin and GitHub Action are working correctly
 @pytest.fixture(scope="session")
 def plugin_logs():
     # list contents of the plugin logs directory
@@ -46,7 +75,6 @@ def plugin_logs():
     yield plugin_logs
 
 
-# plex server fixtures
 @pytest.fixture(scope="session")
 def plugin_log_file():
     # the primary plugin log file
@@ -134,3 +162,44 @@ def music_section(plex):
 def photo_section(plex):
     section = plex.library.section("Photos")
     return section
+
+
+@pytest.fixture(scope='session')
+def data_dir():
+    return DATA_DIRECTORY
+
+
+@pytest.fixture(scope='session')
+def temp_dir():
+    yield TEMP_DIRECTORY
+
+    # cleanup
+    if os.path.isdir(TEMP_DIRECTORY):
+        shutil.rmtree(TEMP_DIRECTORY)
+
+
+class Handler(SimpleHTTPRequestHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.root_dir = DATA_DIRECTORY
+        SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
+
+    def translate_path(self, path):
+        """This method returns the filesystem path for the served files."""
+        # Here, we override the method to serve files from a custom directory.
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(self.root_dir, relpath)
+        return fullpath
+
+
+@pytest.fixture(scope='session')
+def http_server():
+    httpd = socketserver.TCPServer(("", 8000), Handler)
+    server_thread = Thread(target=httpd.serve_forever)
+    server_thread.start()
+
+    yield 'http://localhost:8000/{}'
+
+    httpd.shutdown()
+    server_thread.join()

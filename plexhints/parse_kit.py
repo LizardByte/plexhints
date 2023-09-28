@@ -197,9 +197,9 @@ def xml_element_to_string(el, encoding='utf-8', method=None):
             method = 'xml'
 
     if method == 'xml':
-        return etree.tostring(el, pretty_print=True, encoding=encoding, xml_declaration=True)
+        return etree.tostring(el, pretty_print=True, encoding=encoding, xml_declaration=True).decode(encoding)
     elif method == 'html':
-        return html.tostring(el, method=method, encoding=encoding)
+        return html.tostring(el, method=method, encoding=encoding).decode(encoding)
 
     if method != 'xml' or method != 'html':
         raise Exception('%s is not an allowed method, use "html" or "xml" only.' % method)
@@ -212,7 +212,7 @@ def xml_object_from_string(string):
 
 def xml_object_to_string(obj, encoding='utf-8'):
     # type: (objectify.ObjectifiedElement, str) -> etree.Element
-    return etree.tostring(obj, pretty_print=True, encoding=encoding)
+    return etree.tostring(obj, pretty_print=True, encoding=encoding).decode(encoding)
 
 
 class _HTMLKit:
@@ -347,7 +347,7 @@ class _HTMLKit:
             opener=None,  # todo
             follow_redirects=follow_redirects,
             method=method,
-        ).content, max_size=max_size)
+        ).text, max_size=max_size)
 
 
 class _JSONKit:
@@ -505,7 +505,11 @@ class _PlistKit:
             return plistlib.readPlistFromString(string)
         except AttributeError:
             # python 3.x
-            return plistlib.loads(string.encode('utf-8'))
+            try:
+                return plistlib.loads(string.encode('utf-8'))
+            except AttributeError:
+                # if string is already bytes
+                return plistlib.loads(string)
 
     def ObjectFromURL(self, url, values=None, headers={}, cacheTime=None, encoding=None, errors=None,
                       timeout=GLOBAL_DEFAULT_TIMEOUT, sleep=0, follow_redirects=True, method=None, max_size=None):
@@ -587,7 +591,11 @@ class _PlistKit:
         str
             A Plist represented as a string.
         """
-        return plistlib.writePlistToString(obj)
+        try:
+            return plistlib.writePlistToString(obj)
+        except AttributeError:
+            # python 3.x
+            return plistlib.dumps(obj).decode('utf-8')
 
 
 class _RSSKit:
@@ -740,7 +748,7 @@ class _XMLKit:
         etree.Element
             An `etree.Element <https://lxml.de/tutorial.html#the-element-class>`_ object.
         """
-        return xml_element(name=name, text=text, kwargs=kwargs)
+        return xml_element(name=name, text=text, **kwargs)
 
     def StringFromElement(self, el, encoding='utf8'):
         # type: (etree.Element, str) -> str
@@ -847,7 +855,7 @@ class _XMLKit:
             opener=None,  # todo
             follow_redirects=follow_redirects,
             method=method,
-        ).content, encoding=encoding, max_size=max_size)
+        ).text, encoding=encoding, max_size=max_size)
 
     def ObjectFromString(self, string, max_size=None):
         # type: (str, Optional[int]) -> objectify.ObjectifiedElement
