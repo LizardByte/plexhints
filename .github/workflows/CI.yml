@@ -50,13 +50,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 2.7
-        if: matrix.python == '2.7'
-        uses: LizardByte/.github/actions/setup_python2@nightly
-
-      - name: Set up Python 3.x (${{ matrix.python }})
-        if: matrix.python != '2.7'
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: LizardByte/action-setup-python@master
         with:
           python-version: ${{ matrix.python }}
 
@@ -111,10 +106,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python 2.7
-        uses: LizardByte/.github/actions/setup_python2@nightly
+      - name: Set up Python
+        uses: LizardByte/action-setup-python@master
+        with:
+          python-version: '2.7'
 
-      - name: Set up Python 2.7 Dependencies
+      - name: Set up Python Dependencies
         run: |
           echo "Installing Requirements"
           python --version
