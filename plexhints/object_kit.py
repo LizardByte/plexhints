@@ -214,12 +214,11 @@ def RTMPVideoURL(url, clip=None, clips=None, width=None, height=None, live=False
 
 def WindowsMediaVideoURL(url, width=None, height=None):
     # type: (str, Optional[int], Optional[int]) -> WebkitURL
-    final_url = "https://www.plexapp.com/player/silverlight.php" + \
-                "?stream=" + quote(url)
+    final_url = "https://www.plexapp.com/player/silverlight.php?stream={}".format(quote(url))
     if width:
-        final_url += "&width=" + str(width)
+        final_url = "{}&width={}".format(final_url, width)
     if height:
-        final_url += "&height=" + str(height)
+        final_url = "{}&height={}".format(final_url, height)
 
     return WebVideoURL(final_url)
 

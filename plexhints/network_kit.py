@@ -59,22 +59,22 @@ class _HTTPKit:
         """
         return self._custom_headers
 
-    @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
+    @deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='The HTTP.SetCacheTime() function is deprecated. Use the HTTP.CacheTime property instead.')
     def SetCacheTime(self, cacheTime):
         # type: (float) -> None
         _Log.Warn('The HTTP.SetCacheTime() function is deprecated. Use the HTTP.CacheTime property instead.')
         self._cache_time = cacheTime
 
-    @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
+    @deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='The HTTP.SetHeader() function is deprecated. '
                         'Use HTTP.Headers[] to get and set headers instead.')
     def SetHeader(self, header, value):
-        # type: (dict, any) -> None
+        # type: (str, any) -> None
         _Log.Warn('The HTTP.SetHeader() function is deprecated. Use HTTP.Headers[] to get and set headers instead.')
         self.Headers[header] = value
 
-    @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
+    @deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='The HTTP.SetTimeout() function is deprecated. Use the Network.Timeout property instead.')
     def SetTimeout(self, timeout):
         # type: (float) -> None
@@ -172,7 +172,7 @@ class _HTTPKit:
 
         return cookies if cookies else None
 
-    @deprecated(deprecated_in="unknown", removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
+    @deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='HTTP.GetCookiesForURL() is deprecated - please use HTTP.CookiesForURL() instead.')
     def GetCookiesForURL(self, url):
         # type: (str) -> Optional[dict]
@@ -215,7 +215,7 @@ class _HTTPKit:
         """
         pass
 
-    @deprecated(deprecated_in="unknown", removed_in='unknown', current_version=PLEX_FRAMEWORK_VERSION,
+    @deprecated(deprecated_in=None, removed_in=None, current_version=PLEX_FRAMEWORK_VERSION,
                 details='Randomized user agent strings are no longer supported.')
     def RandomizeUserAgent(self, browser=None):
         # type: (Optional[str]) -> None

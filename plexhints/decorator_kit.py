@@ -110,7 +110,8 @@ def route(path, method='GET'):
         def decorator_call():
             return
 
-    if method != 'GET' or method != 'PUT':
+    allowed_methods = ['GET', 'PUT']
+    if method not in allowed_methods:
         _Log.Exception('The HTTP method should be either "GET" or "PUT", not "%s"' % method)
 
     return decorator_method

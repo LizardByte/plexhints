@@ -29,4 +29,5 @@ __publicResources = {}
 
 
 def Prefixes():
-    return __requestHandlers.keys()
+    # type: () -> list
+    return list(__requestHandlers)  # use `list()` instead of `.keys()` https://stackoverflow.com/a/18552025

@@ -101,7 +101,7 @@ class _TextPref(_Pref):
     Methods
     -------
     encode_value:
-        The encode a value to string.
+        Encode a value to string.
     decode_value:
         Decode a string value.
     info_dict:
@@ -114,7 +114,7 @@ class _TextPref(_Pref):
         self.options = options
 
     def encode_value(self, encoded_value):
-        # type: (Optional[str]) -> str
+        # type: (any) -> str
         if encoded_value is None:
             return ''
         else:
@@ -170,6 +170,7 @@ class _BooleanPref(_Pref):
             return 'false'
 
     def decode_value(self, encoded_value):
+        # type: (Union[bool, str]) -> bool
         if encoded_value is True or str(encoded_value).lower() == 'true':
             return True
         else:
@@ -260,7 +261,7 @@ class _PreferenceSet(object):
 
     @property
     def _user_file_path(self):
-        return os.path.join('plexhints', 'Preferences', self._identifier + '.xml')
+        return os.path.join('plexhints', 'Preferences', '{}.xml'.format(self._identifier))
 
     def _load_user_file(self):
         # todo
@@ -371,7 +372,7 @@ class _PreferenceSet(object):
         for file_path in file_paths:
             if os.path.isfile(file_path):
                 try:
-                    with open(name=file_path, mode='r') as f:
+                    with open(file_path, mode='r') as f:
                         json_array = json.load(fp=f)
                     prefs_json.extend(json_array)
                     _Log.Debug("Loaded preferences from %s", os.path.split(file_path)[1])

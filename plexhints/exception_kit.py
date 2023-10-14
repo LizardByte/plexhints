@@ -35,46 +35,46 @@ class _Exceptions:
 
     class MediaNotAvailable(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2001, "This media is not currently available.")
+            _Exceptions.PlexError.__init__(self, 2001, "This media is not currently available.")
 
     class MediaExpired(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2002, "This media has expired.")
+            _Exceptions.PlexError.__init__(self, 2002, "This media has expired.")
 
     class LiveMediaNotStarted(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2003, "This live media has not yet started.")
+            _Exceptions.PlexError.__init__(self, 2003, "This live media has not yet started.")
 
     class MediaNotAuthorized(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2004, "You are not authorized to access this media.")
+            _Exceptions.PlexError.__init__(self, 2004, "You are not authorized to access this media.")
 
     class MediaGeoblocked(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2005,
-                                  "This media is geoblocked and can't be accessed from your current location.")
+            _Exceptions.PlexError.__init__(self, 2005,
+                                           "This media is geoblocked and can't be accessed from your current location.")
 
     class StreamLimitExceeded(PlexNonCriticalError):
         def __init__(self):
-            Ex.PlexError.__init__(self, 2006,
-                                  "You have reached the limit of streams from this service. Please close one and try "
-                                  "again.")
+            _Exceptions.PlexError.__init__(self, 2006,
+                                           "You have reached the limit of streams from this service. Please close one "
+                                           "and try again.")
 
     class AttributeTypeMismatch(PlexError):
         def __init__(self, status):
-            Ex.PlexError.__init__(self, 2101, status)
+            _Exceptions.PlexError.__init__(self, 2101, status)
 
     class ContextException(PlexError):
         def __init__(self, status):
-            Ex.PlexError.__init__(self, 2102, status)
+            _Exceptions.PlexError.__init__(self, 2102, status)
 
     class APIException(PlexError):
         def __init__(self, status):
-            Ex.PlexError.__init__(self, 2103, status)
+            _Exceptions.PlexError.__init__(self, 2103, status)
 
     class NonCriticalArgumentException(PlexNonCriticalError):
         def __init__(self, status):
-            Ex.PlexNonCriticalError.__init__(self, 2104, status)
+            _Exceptions.PlexNonCriticalError.__init__(self, 2104, status)
 
 
 Ex = _Exceptions()
