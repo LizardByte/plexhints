@@ -90,7 +90,7 @@ A script is provided that allows you to prepare the Plex server for testing. Use
 Bootstrap the Plex server for testing
    .. code-block:: bash
 
-      python scripts/plex-bootstraptest.py --help
+      python scripts/plex_bootstraptest.py --help
 
 Test with pytest
    .. code-block:: bash
