@@ -328,7 +328,7 @@ runs:
         fi
 
         python \
-          -u scripts/plex-bootstraptest.py \
+          -u scripts/plex_bootstraptest.py \
           --destination plex \
           --advertise-ip 127.0.0.1 \
           --bootstrap-timeout ${{ inputs.bootstrap_timeout }} \
