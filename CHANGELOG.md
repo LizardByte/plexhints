@@ -7,6 +7,7 @@
 
 **Dependencies**
 - Bump plexapi from 4.15.2 to 4.15.4
+- Bump plexapi-backport from 4.15.2 to 4.15.4
 - Bump simplejson from 3.19.1 to 3.19.2
 
 **Misc**
