@@ -91,12 +91,39 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Setup Python
+      id: setup-python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        update-environment: false
+
+    - name: Create venv
+      id: venv
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        echo "::group::Create venv"
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # use cygpath to convert windows path to unix path while creating venv
+          $(cygpath.exe -u "${{ steps.setup-python.outputs.python-path }}") -m venv venv
+
+          # set python executable as step output
+          echo "python-path=$(cygpath.exe -u $(pwd)\\venv\\Scripts\\python.exe)" >> $GITHUB_OUTPUT
+        else
+          ${{ steps.setup-python.outputs.python-path }} -m venv venv
+
+          # set python executable as step output
+          echo "python-path=$(pwd)/venv/bin/python" >> $GITHUB_OUTPUT
+        fi
+        echo "::endgroup::"
+
     - name: Build plist
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
         echo "::group::Build plist"
-        python ./scripts/build_plist.py
+        ${{ steps.venv.outputs.python-path }} ./scripts/build_plist.py
         echo "::endgroup::"
 
     - name: Setup plexhints.bundle
@@ -116,10 +143,10 @@ runs:
       run: |
         echo "::group::Install Python Requirements"
         # install the plexhints library
-        python -m pip install -e .
+        ${{ steps.venv.outputs.python-path }} -m pip install -e .
 
         # install requirements required for this action to complete
-        python -m pip install -r requirements-action.txt
+        ${{ steps.venv.outputs.python-path }} -m pip install -r requirements-action.txt
         echo "::endgroup::"
 
     - name: Install Plex Media Server
@@ -327,7 +354,7 @@ runs:
           without_shows="--without-shows"
         fi
 
-        python \
+        ${{ steps.venv.outputs.python-path }} \
           -u scripts/plex_bootstraptest.py \
           --destination plex \
           --advertise-ip 127.0.0.1 \

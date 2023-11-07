@@ -11,33 +11,6 @@ The action does the following:
 3. Collects the Plex Media Server authentication token.
 4. Provides useful output variables for use in subsequent steps.
 
-Prerequisites
--------------
-
-Setup Python
-^^^^^^^^^^^^
-The action relies on Python. Python must be setup before this action is used.
-
-.. attention::
-   Since the main purpose of Plexhints is to aid in development of plugins for Plex Media
-   Server, it is may be desirable to use Python 2.7. GitHub's setup-python action no longer
-   supports Python 2.7; however we have another action that installs Python 2.7 for you.
-
-.. code-block:: yaml
-
-  - name: Set up Python
-    uses: LizardByte/.github/actions/setup_python2@nightly
-
-This action is also useful for testing third-party Plex tools that are not plugins, so you may wish to use a supported
-version of Python instead.
-
-.. code-block:: yaml
-
-  - name: Set up Python
-    uses: actions/setup-python@v4
-    with:
-      python-version: "3.10"
-
 Bootstrap Plex server
 ---------------------
 

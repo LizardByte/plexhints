@@ -1,4 +1,2 @@
-plexapi-backport[alert]==4.15.5;python_version<"3.8"
-plexapi[alert]==4.15.5;python_version>="3.8"
-tqdm==4.64.1;python_version<"3.7"
-tqdm==4.66.1;python_version>="3.7"
+plexapi[alert]==4.15.5
+tqdm==4.66.1
