@@ -50,6 +50,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Bootstrap Plex server
+        id: bootstrap
+        uses: ./
+        with:
+          use_docker: ${{ matrix.docker }}
+          expose_plex_data_files_for_docker: ${{ matrix.docker }}
+
       - name: Set up Python
         # dependabot cannot pick up our tags, so use the commit hash
         uses: LizardByte/setup-python-action@8851ba6849c1003134ced0581b34204f0c322cad
@@ -63,14 +70,8 @@ jobs:
             pip setuptools wheel
 
           # install requirements
+          python -m pip install -e .
           python -m pip install --upgrade -r requirements-dev.txt
-
-      - name: Bootstrap Plex server
-        id: bootstrap
-        uses: ./
-        with:
-          use_docker: ${{ matrix.docker }}
-          expose_plex_data_files_for_docker: ${{ matrix.docker }}
 
       - name: Test with pytest
         env:
