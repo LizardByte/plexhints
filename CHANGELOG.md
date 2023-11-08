@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3] - 2023-11-7
+**Fixed**
+- (Action) Use virtual python environment
+- (Action) Delay start of Plex until after plugins are installed
+
 ## [0.1.2] - 2023-11-6
 **Dependencies**
 - Bump plexapi from 4.15.4 to 4.15.5
@@ -31,3 +36,4 @@
 [0.1.0]: https://github.com/lizardbyte/plexhints/releases/tag/v0.1.0
 [0.1.1]: https://github.com/lizardbyte/plexhints/releases/tag/v0.1.1
 [0.1.2]: https://github.com/lizardbyte/plexhints/releases/tag/v0.1.2
+[0.1.3]: https://github.com/lizardbyte/plexhints/releases/tag/v0.1.3
