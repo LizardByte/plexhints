@@ -123,7 +123,7 @@ runs:
       working-directory: ${{ github.action_path }}
       run: |
         echo "::group::Build plist"
-        ${{ steps.venv.outputs.python-path }} ./scripts/build_plist.py
+        "${{ steps.venv.outputs.python-path }}" ./scripts/build_plist.py
         echo "::endgroup::"
 
     - name: Setup plexhints.bundle
@@ -143,10 +143,10 @@ runs:
       run: |
         echo "::group::Install Python Requirements"
         # install the plexhints library
-        ${{ steps.venv.outputs.python-path }} -m pip install -e .
+        "${{ steps.venv.outputs.python-path }}" -m pip install -e .
 
         # install requirements required for this action to complete
-        ${{ steps.venv.outputs.python-path }} -m pip install -r requirements-action.txt
+        "${{ steps.venv.outputs.python-path }}" -m pip install -r requirements-action.txt
         echo "::endgroup::"
 
     - name: Install Plex Media Server
@@ -193,8 +193,7 @@ runs:
           # https://forums.plex.tv/t/new-server-claiming-requirement-for-macos/816337
           defaults write com.plexapp.plexmediaserver enableLocalSecurity -bool FALSE
 
-          # start plex
-          open "/Applications/Plex Media Server.app"
+          # start plex after plugins are copied
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
           app_data_path="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
           plugin_path="${app_data_path}/Plug-ins"
@@ -354,7 +353,7 @@ runs:
           without_shows="--without-shows"
         fi
 
-        ${{ steps.venv.outputs.python-path }} \
+        "${{ steps.venv.outputs.python-path }}" \
           -u scripts/plex_bootstraptest.py \
           --destination plex \
           --advertise-ip 127.0.0.1 \
