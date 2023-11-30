@@ -15,7 +15,7 @@ except ImportError:
 version = dict()
 with open('plexhints/const.py') as handle:
     exec(handle.read(), version)
-version['__version__'] = os.environ.get('BUILD_NUMBER', '0.0.0')
+version['__version__'] = os.environ.get('BUILD_VERSION', '0.0.0')
 
 # remove leading v from the version tag if present
 version['__version__'] = version['__version__'].lstrip('v')
