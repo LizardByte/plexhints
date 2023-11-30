@@ -3,7 +3,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [master, nightly]
+    branches: [master]
     types: [opened, synchronize, reopened]
   push:
     branches: [master]
@@ -14,24 +14,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check_changelog:
-    name: Check Changelog
+  setup_release:
+    name: Setup Release
+    outputs:
+      changelog_changes: ${{ steps.setup_release.outputs.changelog_changes }}
+      changelog_date: ${{ steps.setup_release.outputs.changelog_date }}
+      changelog_exists: ${{ steps.setup_release.outputs.changelog_exists }}
+      changelog_release_exists: ${{ steps.setup_release.outputs.changelog_release_exists }}
+      changelog_url: ${{ steps.setup_release.outputs.changelog_url }}
+      changelog_version: ${{ steps.setup_release.outputs.changelog_version }}
+      publish_pre_release: ${{ steps.setup_release.outputs.publish_pre_release }}
+      publish_release: ${{ steps.setup_release.outputs.publish_release }}
+      publish_stable_release: ${{ steps.setup_release.outputs.publish_stable_release }}
+      release_body: ${{ steps.setup_release.outputs.release_body }}
+      release_build: ${{ steps.setup_release.outputs.release_build }}
+      release_commit: ${{ steps.setup_release.outputs.release_commit }}
+      release_generate_release_notes: ${{ steps.setup_release.outputs.release_generate_release_notes }}
+      release_tag: ${{ steps.setup_release.outputs.release_tag }}
+      release_version: ${{ steps.setup_release.outputs.release_version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify Changelog
-        id: verify_changelog
-        if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
-        # base_ref for pull request check, ref for push
-        uses: LizardByte/.github/actions/verify_changelog@master
+      - name: Setup Release
+        id: setup_release
+        uses: LizardByte/setup-release-action@v2023.1128.1400
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-    outputs:
-      next_version: ${{ steps.verify_changelog.outputs.changelog_parser_version }}
-      last_version: ${{ steps.verify_changelog.outputs.latest_release_tag_name }}
-      release_body: ${{ steps.verify_changelog.outputs.changelog_parser_description }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   pytest:
     strategy:
@@ -101,7 +111,8 @@ jobs:
           flags: Python-${{ matrix.python }}-${{ runner.os }}
 
   build:
-    needs: [check_changelog]
+    needs:
+      - setup_release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -125,7 +136,7 @@ jobs:
 
       - name: build
         env:
-          BUILD_VERSION: ${{ github.run_number }}
+          BUILD_VERSION: ${{ needs.setup_release.outputs.release_tag }}
         run: |
           python setup.py sdist bdist_wheel
 
@@ -147,7 +158,7 @@ jobs:
       (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
       (github.event_name == 'workflow_dispatch')
     needs:
-      - check_changelog
+      - setup_release
       - build
     runs-on: ubuntu-latest
     environment:
@@ -167,10 +178,15 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Create/Update GitHub Release
-        uses: ncipollo/release-action@v1
+        if: ${{ needs.setup_release.outputs.publish_release == 'true' }}
+        uses: LizardByte/create-release-action@v2023.1128.2625
         with:
-          name: ${{ needs.check_changelog.outputs.next_version }}
-          tag: ${{ needs.check_changelog.outputs.next_version }}
+          allowUpdates: false
+          artifacts: "${{ github.workspace }}/dist/*"
+          body: ''
+          discussionCategory: announcements
+          generateReleaseNotes: true
+          name: ${{ needs.setup_release.outputs.release_tag }}
+          prerelease: ${{ needs.setup_release.outputs.publish_pre_release }}
+          tag: ${{ needs.setup_release.outputs.release_tag }}
           token: ${{ secrets.GH_BOT_TOKEN }}
-          allowUpdates: true
-          body: ${{ needs.check_changelog.outputs.release_body }}

@@ -12,14 +12,13 @@ except ImportError:
     find_namespace_packages = find_packages
 
 # Get version
-version = {}
+version = dict()
 with open('plexhints/const.py') as handle:
     exec(handle.read(), version)
+version['__version__'] = os.environ.get('BUILD_NUMBER', '0.0.0')
 
-try:
-    version['__version__'] += "-{}".format(os.environ['BUILD_NUMBER'])
-except KeyError:
-    pass
+# remove leading v from the version tag if present
+version['__version__'] = version['__version__'].lstrip('v')
 
 # Concatenate README files
 readme_files = [
