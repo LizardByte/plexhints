@@ -11,6 +11,30 @@ except ImportError:
     from setuptools import setup, find_packages
     find_namespace_packages = find_packages
 
+
+def list_files(directory):
+    # type: (str) -> list
+    """
+    List all files in a directory.
+
+    Parameters
+    ----------
+    directory : str
+        The directory to list files from.
+
+    Returns
+    -------
+    list
+        A list of all files in the directory.
+
+    """
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join(path, filename))
+    return paths
+
+
 # Get version
 version = dict()
 with open('plexhints/const.py') as handle:
@@ -19,6 +43,11 @@ version['__version__'] = os.environ.get('BUILD_VERSION', '0.0.0')
 
 # remove leading v from the version tag if present
 version['__version__'] = version['__version__'].lstrip('v')
+
+# Include files required to install from the PyPI source distribution
+data_files = [('', ['README.rst', 'requirements.txt'])]
+docs_files = list_files('docs')
+data_files.append(('docs', docs_files))
 
 # Concatenate README files
 readme_files = [
@@ -61,5 +90,6 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+    ],
+    data_files=data_files,
 )
