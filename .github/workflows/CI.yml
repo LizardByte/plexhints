@@ -145,6 +145,16 @@ jobs:
         run: |
           python -m twine check dist/*
 
+      - name: Install builds
+        run: |
+          echo "::group::Installing tar.gz dist"
+          python -m pip install --upgrade dist/*.tar.gz
+          echo "::endgroup::"
+
+          echo "::group::Installing wheel dist"
+          python -m pip install --upgrade dist/*.whl
+          echo "::endgroup::"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
