@@ -71,6 +71,14 @@ inputs:
     description: Do not create a TV Shows library.
     default: "false"
     required: false
+  without_shows_tmdb:
+    description: Do not create a TV Shows library (TMDB agent).
+    default: "false"
+    required: false
+  without_shows_tvdb:
+    description: Do not create a TV Shows library (TVDB agent).
+    default: "false"
+    required: false
 outputs:
   PLEXTOKEN:
     description: The Plex Media Server authentication token.
@@ -352,6 +360,12 @@ runs:
         if [[ "${{ inputs.without_shows }}" == "true" ]]; then
           without_shows="--without-shows"
         fi
+        if [[ "${{ inputs.without_shows_tmdb }}" == "true" ]]; then
+          without_shows_tmdb="--without-shows-tmdb"
+        fi
+        if [[ "${{ inputs.without_shows_tvdb }}" == "true" ]]; then
+          without_shows_tvdb="--without-shows-tvdb"
+        fi
 
         "${{ steps.venv.outputs.python-path }}" \
           -u scripts/plex_bootstraptest.py \
@@ -372,6 +386,8 @@ runs:
           ${without_music} \
           ${without_photos} \
           ${without_shows} \
+          ${without_shows_tmdb} \
+          ${without_shows_tvdb} \
           --unclaimed
         echo "::endgroup::"
 

@@ -21,6 +21,16 @@ def test_tv_shows_section(tv_shows_section):
     assert show, "Show not found."
 
 
+def test_tv_shows_tmdb_section(tv_shows_tmdb_section):
+    show = tv_shows_tmdb_section.get("Game of Thrones")
+    assert show, "Show not found."
+
+
+def test_tv_shows_tvdb_section(tv_shows_tvdb_section):
+    show = tv_shows_tvdb_section.get("Game of Thrones")
+    assert show, "Show not found."
+
+
 def test_music_section(music_section):
     artist = music_section.get("Broke For Free")
     assert artist, "Artist not found."
