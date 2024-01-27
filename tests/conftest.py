@@ -153,6 +153,18 @@ def tv_shows_section(plex):
 
 
 @pytest.fixture()
+def tv_shows_tmdb_section(plex):
+    section = plex.library.section("TV Shows-tmdb")
+    return section
+
+
+@pytest.fixture()
+def tv_shows_tvdb_section(plex):
+    section = plex.library.section("TV Shows-tvdb")
+    return section
+
+
+@pytest.fixture()
 def music_section(plex):
     section = plex.library.section("Music")
     return section

@@ -480,6 +480,20 @@ if __name__ == "__main__":  # noqa: C901
         dest="with_shows",
         action="store_false",
     )  # noqa
+    parser.add_argument(
+        "--without-shows-tmdb",
+        help="Do not create TV Shows (tmdb agent) section",
+        default=True,
+        dest="with_shows_tmdb",
+        action="store_false",
+    )  # noqa
+    parser.add_argument(
+        "--without-shows-tvdb",
+        help="Do not create TV Shows (tvdb agent) section",
+        default=True,
+        dest="with_shows_tvdb",
+        action="store_false",
+    )  # noqa
     opts, _ = parser.parse_known_args()
 
     account = get_plex_account(opts)
@@ -644,10 +658,10 @@ if __name__ == "__main__":  # noqa: C901
         )
 
     # Prepare TV Show section
-    if opts.with_shows:
-        tvshows_path = os.path.join(media_path, "TV-Shows")
-        num_ep = setup_show(tvshows_path)
+    tvshows_path = os.path.join(media_path, "TV-Shows")
+    num_ep = setup_show(tvshows_path)
 
+    if opts.with_shows:
         sections.append(
             dict(
                 name="TV Shows",
@@ -656,6 +670,32 @@ if __name__ == "__main__":  # noqa: C901
                 agent="tv.plex.agents.series",
                 scanner="Plex TV Series",
                 language="en-US",
+                expected_media_count=num_ep,
+            )
+        )
+
+    if opts.with_shows_tmdb:
+        sections.append(
+            dict(
+                name="TV Shows-tmdb",
+                type="show",
+                location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
+                agent="com.plexapp.agents.themoviedb",
+                scanner="Plex Series Scanner",
+                # language="en-US",
+                expected_media_count=num_ep,
+            )
+        )
+
+    if opts.with_shows_tvdb:
+        sections.append(
+            dict(
+                name="TV Shows-tvdb",
+                type="show",
+                location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
+                agent="com.plexapp.agents.thetvdb",
+                scanner="Plex Series Scanner",
+                # language="en-US",
                 expected_media_count=num_ep,
             )
         )
