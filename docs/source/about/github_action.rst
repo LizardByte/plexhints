@@ -28,10 +28,12 @@ Inputs
      - Accept Plex's EULA.
      - ``false``
      - false
-   * - ``additional_server_queries_put``
-     - Space separated list of additional PUT requests to send to the server. The requests are sent before the
-       library sections are created. You can use this to enable third party metadata agents, as an example.
-       e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
+   * - ``additional_server_queries``
+     - Space separated list of additional requests to send to the server. The type of request should be at the beginning
+       of the endpoint, followed by a `|`. If no `|` is found the default request type of `PUT` will be used.
+       The requests are sent before the library sections are created.
+       You can use this to enable third party metadata agents, as an example.
+       e.g. `put|/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
      - ``""``
      - false
    * - ``bootstrap_timeout``

@@ -385,10 +385,14 @@ if __name__ == "__main__":  # noqa: C901
         "--accept-eula", help="Accept Plex's EULA", default=False, action="store_true"
     )  # noqa
     parser.add_argument(
-        "--additional-server-queries-put",
-        help="Comma separated list of additional PUT requests to send to the server. The requests are sent before the "
-             "library sections are created. You can use this to enable third party metadata agents, as an example. "
-             "e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`",
+        "--additional-server-queries",
+        help="Space separated list of additional requests to send to the server. The type of request should be at the "
+             "beginning of the endpoint, followed by a `|`. "
+             "If no `|` is found the default request type of `PUT` will be used. "
+             "The requests are sent before the library sections are created. "
+             "You can use this to enable third party metadata agents, as an example. "
+             "e.g. "
+             "`put|/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>` ",
         default=[],
         nargs='*',
     )  # noqa
@@ -734,13 +738,50 @@ if __name__ == "__main__":  # noqa: C901
         )
 
     # send additional server queries
-    if opts.additional_server_queries_put:
-        print("Sending additional PUT requests to the server")
-        print("Additional PUT requests: {}".format(opts.additional_server_queries_put))
-        for query in opts.additional_server_queries_put:
-            query = query.strip()
-            print("Sending PUT request to {}".format(query))
-            server.query(key=query, method=server._session.put)
+    if opts.additional_server_queries:
+        request_map = {
+            "delete": server._session.delete,
+            "get": server._session.get,
+            "post": server._session.post,
+            "put": server._session.put,
+        }
+
+        print("Sending additional requests to the server")
+        print("Additional requests: {}".format(opts.additional_server_queries))
+
+        completed_queries = []
+        start = time.time()
+        runtime = 0
+        while runtime < 60 and len(completed_queries) < len(opts.additional_server_queries):
+            for query in opts.additional_server_queries:
+                query = query.strip()
+                if query not in completed_queries:
+                    if '|' in query:
+                        method, key = query.split('|')
+                        method = method.strip()
+                        key = key.strip()
+                    else:
+                        method = 'put'
+                        key = query.strip()
+
+                    if method not in request_map:
+                        raise SystemExit("Invalid method specified: {}".format(method))
+                    if not key.startswith('/'):
+                        raise SystemExit("Invalid key specified: {}".format(key))
+                    print("Sending {} request to {}".format(method, key))
+                    try:
+                        server.query(key=key, method=request_map[method])
+                    except NotFound as err:
+                        # if 404, wait
+                        print("error: {}".format(err))
+                        time.sleep(5)
+                    else:
+                        completed_queries.append(query)
+                    finally:
+                        runtime = time.time() - start
+
+        if len(completed_queries) < len(opts.additional_server_queries):
+            raise SystemExit("Did not successfully complete all additional server queries")
 
     # Create the Plex library in our instance
     if sections:
