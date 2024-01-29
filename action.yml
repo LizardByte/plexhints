@@ -9,11 +9,13 @@ inputs:
     description: Accept Plex's EULA.
     default: "false"
     required: false
-  additional_server_queries_put:
+  additional_server_queries:
     description: >-
-      Space separated list of additional PUT requests to send to the server. The requests are sent before the
-      library sections are created. You can use this to enable third party metadata agents, as an example.
-      e.g. `/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
+      Space separated list of additional requests to send to the server. The type of request should be at the beginning
+      of the endpoint, followed by a `|`. If no `|` is found the default request type of `PUT` will be used.
+      The requests are sent before the library sections are created.
+      You can use this to enable third party metadata agents, as an example.
+      e.g. `put|/system/agents/com.plexapp.agents.imdb/config/1?order=com.plexapp.agents.imdb%2C<my_movie_agent>`
     default: ""
     required: false
   bootstrap_timeout:
@@ -325,9 +327,9 @@ runs:
         if [[ "${{ inputs.accept_eula }}" == "true" ]]; then
           accept_eula="--accept-eula"
         fi
-        if [[ -n "${{ inputs.additional_server_queries_put }}" ]]; then
-          echo "additional_server_queries_put: ${{ inputs.additional_server_queries_put }}"
-          server_queries_put="--additional-server-queries-put ${{ inputs.additional_server_queries_put }}"
+        if [[ -n "${{ inputs.additional_server_queries }}" ]]; then
+          echo "additional_server_queries: ${{ inputs.additional_server_queries }}"
+          server_queries_put="--additional-server-queries ${{ inputs.additional_server_queries }}"
         fi
         if [[ "${{ inputs.use_docker }}" == "false" ]]; then
           use_docker="--no-docker"
