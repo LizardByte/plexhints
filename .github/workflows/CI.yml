@@ -156,7 +156,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           if-no-files-found: error  # 'warn' or 'ignore' are also available, defaults to `warn`
