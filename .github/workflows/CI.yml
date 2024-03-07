@@ -106,7 +106,7 @@ jobs:
           always() &&
           (steps.test.outcome == 'success' || steps.test.outcome == 'failure') &&
           (matrix.docker == false)
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           flags: Python-${{ matrix.python }}-${{ runner.os }}
 
