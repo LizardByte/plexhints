@@ -1,25 +1,7 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/README.rst
+:github_url: https://github.com/LizardByte/plexhints/blob/nightly/README.rst
 
-Overview
-========
-LizardByte has the full documentation hosted on `Read the Docs <http://plexhints.readthedocs.io/>`__.
-
-About
------
-Plexhints is a set of tools to aid in the development of plugins for Plex Media Server. It is not a framework, but
-rather a set of tools that can be used to make your life easier.
-
-Features
---------
-- Python library providing type hints to aid in the development of Plex plugins. Get rid of all those IDE warnings
-  and errors!
-- A GitHub Action that will install and bootstrap a Plex Media Server in a CI environment. The action can install
-  plugins and setup dummy libraries. Additionally the Plex token is provided as an output. This is useful for testing
-  your plugin or other Plex project in a CI environment.
-
-Integrations
-------------
-
+plexhints
+=========
 .. image:: https://img.shields.io/github/actions/workflow/status/lizardbyte/plexhints/CI.yml.svg?branch=master&label=CI%20build&logo=github&style=for-the-badge
    :alt: GitHub Workflow Status (CI)
    :target: https://github.com/LizardByte/plexhints/actions/workflows/CI.yml?query=branch%3Amaster
@@ -39,3 +21,24 @@ Integrations
 .. image:: https://img.shields.io/pypi/v/plexhints.svg?style=for-the-badge&logo=pypi&label=pypi%20package
    :alt: PyPI
    :target: https://pypi.org/project/plexhints/
+
+.. image:: https://img.shields.io/pypi/dm/plexhints?style=for-the-badge&logo=pypi&label=pypi%20downloads
+   :alt: PyPI - Downloads
+   :target: https://pypi.org/project/plexhints/
+
+Overview
+--------
+Plexhints is a set of tools to aid in the development of plugins for Plex Media Server. It is not a framework, but
+rather a set of tools that can be used to make your life easier.
+
+Documentation is available on `Read the Docs <http://plexhints.readthedocs.io/>`__.
+
+This project is not affiliated with Plex Inc.
+
+Features
+--------
+- Python library providing type hints to aid in the development of Plex plugins. Get rid of all those IDE warnings
+  and errors!
+- A GitHub Action that will install and bootstrap a Plex Media Server in a CI environment. The action can install
+  plugins and setup dummy libraries. Additionally the Plex token is provided as an output. This is useful for testing
+  your plugin or other Plex project in a CI environment.

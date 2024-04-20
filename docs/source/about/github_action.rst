@@ -1,4 +1,4 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/docs/source/about/github_action.rst
+:github_url: https://github.com/LizardByte/plexhints/blob/nightly/docs/source/about/github_action.rst
 
 GitHub Action
 =============
