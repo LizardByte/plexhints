@@ -79,7 +79,11 @@ jobs:
             pip setuptools wheel
 
           # install requirements
-          python -m pip install -e .
+          if [[ "${{ matrix.python }}" == "2.7" ]]; then
+            # required for building PyYAML on macos-14 runner
+            python -m pip install "Cython<3.0.0"
+          fi
+          python -m pip install --no-build-isolation -e .
           python -m pip install --upgrade -r requirements-dev.txt
 
       - name: Test with pytest
