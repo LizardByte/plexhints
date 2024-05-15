@@ -21,7 +21,6 @@ import os
 import re
 import shutil
 import socket
-import sys
 import time
 try:
     from plexapi.backports import glob
@@ -804,9 +803,7 @@ if __name__ == "__main__":  # noqa: C901
     if account and opts.show_token:
         print("Auth token is %s" % account.authenticationToken)
     if opts.show_token_plexhints:
-        sys.path.append('Contents')
-        from Code import constants
-        plugin_log_file = os.path.join(os.environ['PLEX_PLUGIN_LOG_PATH'], "{}.log".format(constants.plugin_identifier))
+        plugin_log_file = os.path.join(os.environ['PLEX_PLUGIN_LOG_PATH'], "dev.lizardbyte.plexhints.log")
         print("plexhints plugin log file: {}".format(plugin_log_file))
 
         # wait up to 180 seconds
