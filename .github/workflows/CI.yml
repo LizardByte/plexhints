@@ -68,7 +68,7 @@ jobs:
           expose_plex_data_files_for_docker: ${{ matrix.docker }}
 
       - name: Set up Python
-        uses: LizardByte/setup-python-action@v2023.1226.20556
+        uses: LizardByte/setup-python-action@v2024.515.10401
         with:
           python-version: ${{ matrix.python }}
 
@@ -125,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: LizardByte/setup-python-action@v2023.1226.20556
+        uses: LizardByte/setup-python-action@v2024.515.10401
         with:
           python-version: '2.7'
 
