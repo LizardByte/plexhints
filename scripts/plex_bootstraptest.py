@@ -642,7 +642,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/Movies" if opts.no_docker is False else movies_path,
                 agent="com.plexapp.agents.imdb",
                 scanner="Plex Movie Scanner",
-                # language="en-US",
+                language="en",
                 expected_media_count=num_movies,
             )
         )
@@ -655,7 +655,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/Movies" if opts.no_docker is False else movies_path,
                 agent="com.plexapp.agents.themoviedb",
                 scanner="Plex Movie Scanner",
-                # language="en-US",
+                language="en",
                 expected_media_count=num_movies,
             )
         )
@@ -685,7 +685,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
                 agent="com.plexapp.agents.themoviedb",
                 scanner="Plex Series Scanner",
-                # language="en-US",
+                language="en",
                 expected_media_count=num_ep,
             )
         )
@@ -698,7 +698,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
                 agent="com.plexapp.agents.thetvdb",
                 scanner="Plex Series Scanner",
-                # language="en-US",
+                language="en",
                 expected_media_count=num_ep,
             )
         )
@@ -732,6 +732,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/Photos" if opts.no_docker is False else photos_path,
                 agent="com.plexapp.agents.none",
                 scanner="Plex Photo Scanner",
+                language="en",
                 expected_media_count=has_photos,
             )
         )
