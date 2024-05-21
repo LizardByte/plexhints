@@ -1,0 +1,39 @@
+---
+# Update pypi on release events.
+
+name: Update pypi
+
+on:
+  release:
+    types: [created, edited]
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
+  cancel-in-progress: true
+
+jobs:
+  update-pypi:
+    if: >-
+      !github.event.release.prerelease && !github.event.release.draft
+    runs-on: ubuntu-latest
+    environment:
+      name: publish
+      url: https://pypi.org/p/plexhints
+    permissions:
+      id-token: write
+    steps:
+      - name: Download release assets
+        id: download
+        uses: robinraju/release-downloader@v1.10
+        with:
+          repository: "${{ github.repository }}"
+          tag: "${{ github.event.release.tag_name }}"
+          fileName: "*"
+          tarBall: false
+          zipBall: false
+          out-file-path: "dist"
+          extract: false
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

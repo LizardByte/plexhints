@@ -152,36 +152,11 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           if-no-files-found: error  # 'warn' or 'ignore' are also available, defaults to `warn`
           path: dist
-
-  publish:
-    name: Publish
-    if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
-      (github.event_name == 'workflow_dispatch')
-    needs:
-      - setup_release
-      - build
-    runs-on: ubuntu-latest
-    environment:
-      name: publish
-      url: https://pypi.org/p/plexhints
-    permissions:
-      id-token: write
-    steps:
-      - name: Download dist artifacts
-        # this will be published to PyPI
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Create/Update GitHub Release
         if: ${{ needs.setup_release.outputs.publish_release == 'true' }}
