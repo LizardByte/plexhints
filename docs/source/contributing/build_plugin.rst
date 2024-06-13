@@ -1,4 +1,4 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/docs/source/contributing/build_plugin.rst
+:github_url: https://github.com/LizardByte/plexhints/blob/nightly/docs/source/contributing/build_plugin.rst
 
 Build Plugin
 ============
