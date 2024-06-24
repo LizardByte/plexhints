@@ -1,2 +1,2 @@
-plexapi[alert]==4.15.13
+plexapi[alert]==4.15.14
 tqdm==4.66.4
