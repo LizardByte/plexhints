@@ -1,4 +1,4 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/docs/source/framework/index.rst
+:github_url: https://github.com/LizardByte/plexhints/blob/master/docs/source/framework/index.rst
 
 Plex Plugin-in Framework documentation
 ======================================

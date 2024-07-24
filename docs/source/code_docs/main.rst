@@ -1,4 +1,4 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/Contents/Code/__init__.py
+:github_url: https://github.com/LizardByte/plexhints/blob/master/Contents/Code/__init__.py
 
 .. include:: ../global.rst
 

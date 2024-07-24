@@ -1,4 +1,4 @@
-:github_url: https://github.com/LizardByte/plexhints/tree/nightly/docs/source/about/installation.rst
+:github_url: https://github.com/LizardByte/plexhints/blob/master/docs/source/about/installation.rst
 
 Installation
 ============
