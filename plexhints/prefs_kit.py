@@ -451,13 +451,14 @@ class _PreferenceSet(object):
             # Check for a value stored in the current context
             # raise an exception if a secure preference value couldn't be found
             # pref_values = self._sandbox.context.pref_values.get(self._identifier)
-            pref_values = self._prefs_dict
-            if pref_values:
-                if pref.secure is False or name in pref_values:  # this seems odd... should be and instead of or?
-                    value = pref.info_dict('')['value']
-                    found = True
-                else:
-                    raise Exception
+            # pref_values = self._prefs_dict
+            # if pref_values:
+            #     if pref.secure is False or name in pref_values:  # this seems odd... should be and instead of or?
+            #         value = pref_values.get(name)
+            #         print(value.__dict__)
+            #         found = True
+            #     else:
+            #         raise Exception
 
             # If we're not on the node, check for a user value.
             if not found and self._user_values:
