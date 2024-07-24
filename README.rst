@@ -1,5 +1,3 @@
-:github_url: https://github.com/LizardByte/plexhints/blob/nightly/README.rst
-
 plexhints
 =========
 .. image:: https://img.shields.io/github/actions/workflow/status/lizardbyte/plexhints/CI.yml.svg?branch=master&label=CI%20build&logo=github&style=for-the-badge
