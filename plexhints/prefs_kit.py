@@ -312,7 +312,7 @@ class _PreferenceSet(object):
         prefs_xml = _XML.StringFromElement(el=element)
         prefs_directory = os.path.join('plexhints', 'Preferences')
         if not os.path.isdir(prefs_directory):
-            os.mkdir(prefs_directory)
+            os.makedirs(prefs_directory)
         with open(self._user_file_path, mode='w+') as f:
             f.write(prefs_xml)
         _Log.Debug("Saved the user preferences")
