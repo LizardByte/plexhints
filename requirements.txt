@@ -1,13 +1,13 @@
 # version independent
 deprecation==2.1.0
 future==1.0.0
-lxml==4.9.4
 simplejson==3.19.2
 
 # version dependent
 BeautifulSoup4==4.9.3; python_version<"3"
 demjson==2.2.4; python_version<"3"
 feedparser==5.2.1; python_version<"3"
+lxml==4.9.4; python_version<"3"
 PyYAML==5.4.1; python_version<"3"
 requests==2.27.1; python_version<"3"
 requests-cache==0.5.2; python_version<"3"
