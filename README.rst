@@ -26,6 +26,13 @@ plexhints
 
 Overview
 --------
+
+.. attention::
+
+   Plex is removing ALL support for plugins. This project is no longer maintained. See
+   `Plex Forum <https://forums.plex.tv/t/important-information-for-users-running-plex-media-server-on-nvidia-shield-devices/883484>`__
+   for more information.
+
 Plexhints is a set of tools to aid in the development of plugins for Plex Media Server. It is not a framework, but
 rather a set of tools that can be used to make your life easier.
 
